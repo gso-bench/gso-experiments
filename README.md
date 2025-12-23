@@ -22,8 +22,26 @@ Agent trajectories are viewable via [Docent](https://transluce.org/docent), a to
 - **Reports**: See `results/reports/<model>.json` for evaluation reports
 - **Raw data**: `gsutil -m cp -r gs://gso-experiments/<model> ./`
 
-We recommend using the Docent for most analysis cases. 
-However raw **trajectories and evaluation logs** are stored in Google Cloud Storage in the following structure:
+We recommend using Docent for most analysis cases. However, if you need to download raw data, you can use the option below.
+
+### Downloading Raw Data from GCS
+
+Raw **trajectories and evaluation logs** are stored in a public [Google Cloud Storage](https://cloud.google.com/storage) bucket. To download them, you'll need to:
+
+1. [Create a Google Cloud account](https://cloud.google.com/free)
+2. [Install the Google Cloud CLI](https://cloud.google.com/sdk/docs/install)
+3. Run `gcloud init` to configure your credentials
+
+Then download data with:
+```bash
+# List available models
+gsutil ls gs://gso-experiments/
+
+# Download a specific model's data
+gsutil -m cp -r gs://gso-experiments/<model> ./
+```
+
+Each model's data is stored in the following structure:
 ```
 gs://gso-experiments/<model>/
 ├── trajs/                   # Agent trajectories
