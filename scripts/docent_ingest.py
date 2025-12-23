@@ -359,7 +359,9 @@ def ingest_trajectories(
             name=collection_name,
             description="GSO benchmark trajectories"
         )
-        print(f"Created collection: {collection_name} ({collection_id})")
+        # Make collection publicly viewable
+        client.make_collection_public(collection_id)
+        print(f"Created public collection: {collection_name} ({collection_id})")
     
     # Load run-level report if not provided
     if run_report is None:
