@@ -1,0 +1,86 @@
+{
+  "claude-opus-4": {
+    "trajs_dir": "claude-opus-4-20250514_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "claude-opus-4-20250514_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "report_file": "claude-4-opus.opt@1.pass.report.json",
+    "docent_id": "da24a2d8-e152-428c-a0b1-6566e278f0d3"
+  },
+  "claude-opus-4.5": {
+    "trajs_dir": "claude-opus-4-5-20251101_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "claude-opus-4-5-20251101_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "report_file": "claude-opus-4.5.opt@1.pass.report.json",
+    "docent_id": "515b3d9e-fe8f-4106-978c-d95f3f306363"
+  },
+  "claude-sonnet-4": {
+    "trajs_dir": "claude-sonnet-4-20250514_maxiter_100_N_v0.35.0-no-hint-run_1",
+    "logs_dir": "claude-sonnet-4-20250514_maxiter_100_N_v0.35.0-no-hint-run_1",
+    "report_file": "claude-4-sonnet.opt@1.pass.report.json",
+    "docent_id": "7cecb8c1-cafe-4684-9f79-2a499fcbc8e6"
+  },
+  "claude-sonnet-4.5": {
+    "trajs_dir": "claude-sonnet-4-5-20250929_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "claude-sonnet-4-5-20250929_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "report_file": "claude-sonnet-4.5.opt@1.pass.report.json",
+    "docent_id": "d430cbc5-9897-4798-848a-e52fdaac99e2"
+  },
+  "gemini-2.5-pro": {
+    "trajs_dir": "gemini-2.5-pro_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "gemini-2.5-pro_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "report_file": "gemini-2.5-pro.opt@1.pass.report.json",
+    "docent_id": "0391210f-1baa-4fcc-bc51-6c3c35d047b8"
+  },
+  "gemini-3-flash": {
+    "trajs_dir": "gemini-3-flash-preview_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "gemini-3-flash-preview_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "report_file": "gemini-3-flash.opt@1.pass.report.json",
+    "docent_id": "a4d9c821-8add-4ce9-9948-1267c5cf1275"
+  },
+  "gemini-3-pro": {
+    "trajs_dir": "gemini-3-pro-preview_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "gemini-3-pro-preview_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "report_file": "gemini-3-pro.opt@1.pass.report.json",
+    "docent_id": "2100bee5-e038-4947-bf23-94a02d3e68bc"
+  },
+  "glm-4.5": {
+    "trajs_dir": "GLM-4.5-Air-FP8_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "GLM-4.5-Air-FP8_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "report_file": "glm-4.5.opt@1.pass.report.json",
+    "docent_id": "d67a76ab-1ad2-4b88-9f31-500626ebc5e0"
+  },
+  "gpt-5": {
+    "trajs_dir": "gpt-5-2025-08-07_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "gpt-5-2025-08-07_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "report_file": "gpt-5.opt@1.pass.report.json",
+    "docent_id": "411b44c2-fca4-4ae8-b532-121cd1fef982"
+  },
+  "gpt-5.1": {
+    "trajs_dir": "gpt-5.1-2025-11-13_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "gpt-5.1-2025-11-13_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "report_file": "gpt-5.1.opt@1.pass.report.json",
+    "docent_id": "b67b746c-dac1-47d3-94bd-e786b6c7c382"
+  },
+  "gpt-5.2": {
+    "trajs_dir": "gpt-5.2-2025-12-11_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "gpt-5.2-2025-12-11_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "report_file": "gpt-5.2.opt@1.pass.report.json",
+    "docent_id": "992bdf7f-4906-4dd5-98dd-328d6a663624"
+  },
+  "kimi-k2": {
+    "trajs_dir": "Kimi-K2-Instruct_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "Kimi-K2-Instruct_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "report_file": "kimi-k2.opt@1.pass.report.json",
+    "docent_id": "91e60d04-1bdb-4db1-a404-0e15b1bfe474"
+  },
+  "o3": {
+    "trajs_dir": "o3_maxiter_100_N_v0.35.0-no-hint-run_1",
+    "logs_dir": "o3_maxiter_100_N_v0.35.0-no-hint-run_1",
+    "report_file": "o3.opt@1.pass.report.json",
+    "docent_id": "9ec7f9f2-dd53-4799-8515-84fb3f4cd97d"
+  },
+  "qwen3-coder": {
+    "trajs_dir": "Qwen3-Coder-480B-A35B-Instruct-FP8_maxiter_100_N_v0.51.1-no-hint-run_1",
+    "logs_dir": "qwen3-coder-plus_maxiter_100_N_v0.51.1-no-hint-run_2",
+    "report_file": "qwen3-coder.opt@1.pass.report.json",
+    "docent_id": "5643520b-8b4a-4b13-91b4-8a47ab462b73"
+  }
+}

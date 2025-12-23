@@ -1,0 +1,13 @@
+[project]
+name = "gso-experiments"
+version = "0.1.0"
+description = "Trajectories and results from GSO benchmark evaluations"
+requires-python = ">=3.11"
+dependencies = [
+    "docent-python",
+    "python-dotenv>=1.0.0",
+    "tqdm>=4.65.0",
+]
+
+[tool.uv]
+dev-dependencies = []

@@ -1,0 +1,172 @@
+{
+  "models": {
+    "claude-opus-4": {
+      "docent_url": "https://docent.transluce.org/dashboard/da24a2d8-e152-428c-a0b1-6566e278f0d3",
+      "gcs_path": "gs://gso-experiments/claude-opus-4",
+      "report": "reports/claude-opus-4.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 7,
+        "opt_base": 38,
+        "passed": 66,
+        "score": 6.86
+      }
+    },
+    "claude-opus-4.5": {
+      "docent_url": "https://docent.transluce.org/dashboard/515b3d9e-fe8f-4106-978c-d95f3f306363",
+      "gcs_path": "gs://gso-experiments/claude-opus-4.5",
+      "report": "reports/claude-opus-4.5.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 27,
+        "opt_base": 65,
+        "passed": 79,
+        "score": 26.47
+      }
+    },
+    "claude-sonnet-4": {
+      "docent_url": "https://docent.transluce.org/dashboard/7cecb8c1-cafe-4684-9f79-2a499fcbc8e6",
+      "gcs_path": "gs://gso-experiments/claude-sonnet-4",
+      "report": "reports/claude-sonnet-4.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 4,
+        "opt_base": 45,
+        "passed": 74,
+        "score": 3.92
+      }
+    },
+    "claude-sonnet-4.5": {
+      "docent_url": "https://docent.transluce.org/dashboard/d430cbc5-9897-4798-848a-e52fdaac99e2",
+      "gcs_path": "gs://gso-experiments/claude-sonnet-4.5",
+      "report": "reports/claude-sonnet-4.5.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 15,
+        "opt_base": 58,
+        "passed": 79,
+        "score": 14.71
+      }
+    },
+    "gemini-2.5-pro": {
+      "docent_url": "https://docent.transluce.org/dashboard/0391210f-1baa-4fcc-bc51-6c3c35d047b8",
+      "gcs_path": "gs://gso-experiments/gemini-2.5-pro",
+      "report": "reports/gemini-2.5-pro.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 4,
+        "opt_base": 16,
+        "passed": 35,
+        "score": 3.92
+      }
+    },
+    "gemini-3-flash": {
+      "docent_url": "https://docent.transluce.org/dashboard/a4d9c821-8add-4ce9-9948-1267c5cf1275",
+      "gcs_path": "gs://gso-experiments/gemini-3-flash",
+      "report": "reports/gemini-3-flash.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 10,
+        "opt_base": 33,
+        "passed": 72,
+        "score": 9.8
+      }
+    },
+    "gemini-3-pro": {
+      "docent_url": "https://docent.transluce.org/dashboard/2100bee5-e038-4947-bf23-94a02d3e68bc",
+      "gcs_path": "gs://gso-experiments/gemini-3-pro",
+      "report": "reports/gemini-3-pro.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 19,
+        "opt_base": 68,
+        "passed": 80,
+        "score": 18.63
+      }
+    },
+    "glm-4.5": {
+      "docent_url": "https://docent.transluce.org/dashboard/d67a76ab-1ad2-4b88-9f31-500626ebc5e0",
+      "gcs_path": "gs://gso-experiments/glm-4.5",
+      "report": "reports/glm-4.5.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 3,
+        "opt_base": 20,
+        "passed": 62,
+        "score": 2.94
+      }
+    },
+    "gpt-5": {
+      "docent_url": "https://docent.transluce.org/dashboard/411b44c2-fca4-4ae8-b532-121cd1fef982",
+      "gcs_path": "gs://gso-experiments/gpt-5",
+      "report": "reports/gpt-5.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 7,
+        "opt_base": 49,
+        "passed": 78,
+        "score": 6.86
+      }
+    },
+    "gpt-5.1": {
+      "docent_url": "https://docent.transluce.org/dashboard/b67b746c-dac1-47d3-94bd-e786b6c7c382",
+      "gcs_path": "gs://gso-experiments/gpt-5.1",
+      "report": "reports/gpt-5.1.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 14,
+        "opt_base": 50,
+        "passed": 78,
+        "score": 13.73
+      }
+    },
+    "gpt-5.2": {
+      "docent_url": "https://docent.transluce.org/dashboard/992bdf7f-4906-4dd5-98dd-328d6a663624",
+      "gcs_path": "gs://gso-experiments/gpt-5.2",
+      "report": "reports/gpt-5.2.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 28,
+        "opt_base": 64,
+        "passed": 80,
+        "score": 27.45
+      }
+    },
+    "kimi-k2": {
+      "docent_url": "https://docent.transluce.org/dashboard/91e60d04-1bdb-4db1-a404-0e15b1bfe474",
+      "gcs_path": "gs://gso-experiments/kimi-k2",
+      "report": "reports/kimi-k2.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 5,
+        "opt_base": 32,
+        "passed": 72,
+        "score": 4.9
+      }
+    },
+    "o3": {
+      "docent_url": "https://docent.transluce.org/dashboard/9ec7f9f2-dd53-4799-8515-84fb3f4cd97d",
+      "gcs_path": "gs://gso-experiments/o3",
+      "report": "reports/o3.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 9,
+        "opt_base": 22,
+        "passed": 48,
+        "score": 8.82
+      }
+    },
+    "qwen3-coder": {
+      "docent_url": "https://docent.transluce.org/dashboard/5643520b-8b4a-4b13-91b4-8a47ab462b73",
+      "gcs_path": "gs://gso-experiments/qwen3-coder",
+      "report": "reports/qwen3-coder.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 5,
+        "opt_base": 33,
+        "passed": 63,
+        "score": 4.9
+      }
+    }
+  }
+}
