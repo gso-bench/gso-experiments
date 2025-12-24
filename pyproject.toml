@@ -2,6 +2,7 @@
 name = "gso-experiments"
 version = "0.1.0"
 description = "Trajectories and results from GSO benchmark evaluations"
+license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
     "docent-python",
