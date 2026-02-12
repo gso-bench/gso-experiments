@@ -1,5 +1,17 @@
 {
   "models": {
+    "claude-opus-4.6": {
+      "docent_url": "https://docent.transluce.org/dashboard/c129c34b-3b40-4db1-b963-68d5e9372969",
+      "gcs_path": "gs://gso-experiments/claude-opus-4.6",
+      "report": "reports/claude-opus-4.6.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 34,
+        "opt_base": 78,
+        "passed": 86,
+        "score": 33.33
+      }
+    },
     "claude-opus-4": {
       "docent_url": "https://docent.transluce.org/dashboard/da24a2d8-e152-428c-a0b1-6566e278f0d3",
       "gcs_path": "gs://gso-experiments/claude-opus-4",
