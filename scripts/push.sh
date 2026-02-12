@@ -2,9 +2,11 @@
 # Push GSO evaluation results to GCS and/or Docent
 #
 # Usage:
-#   ./scripts/push.sh gcs      # Push to GCS only
-#   ./scripts/push.sh docent   # Push to Docent only
-#   ./scripts/push.sh all      # Push to both (default)
+#   ./scripts/push.sh gcs         # Push to GCS only
+#   ./scripts/push.sh docent     # Push to Docent only
+#   ./scripts/push.sh all        # Push to both (default)
+#   ./scripts/push.sh docent new-only   # Docent: only models without docent_id (keeps existing links)
+#   ./scripts/push.sh all new-only      # GCS + Docent for new models only
 
 set +e  # Don't exit on errors (some symlinks may fail)
 
@@ -16,6 +18,7 @@ MODELS_JSON="$REPO_DIR/models.json"
 # Source directories
 TRAJS_BUCKET="$HOME/buckets/gso_bucket/submissions/gso-bench__gso-test/CodeActAgent/pass"
 TRAJS_OH="$HOME/OpenHands/evaluation/evaluation_outputs/outputs/gso-bench__gso-test/CodeActAgent/pass"
+TRAJS_SCAFFOLDS_OH="$HOME/scaffolds/openhands-runs"
 LOGS_BASE="$HOME/gso-internal/logs/run_evaluation/pass"
 REPORTS_DIR="$HOME/gso-internal/reports"
 
@@ -24,7 +27,9 @@ declare -A DOCENT_COLLECTIONS
 
 find_trajs_path() {
     local trajs_dir=$1
-    if [ -d "$TRAJS_BUCKET/$trajs_dir" ]; then
+    if [ -d "$TRAJS_SCAFFOLDS_OH/$trajs_dir" ]; then
+        echo "$TRAJS_SCAFFOLDS_OH/$trajs_dir"
+    elif [ -d "$TRAJS_BUCKET/$trajs_dir" ]; then
         echo "$TRAJS_BUCKET/$trajs_dir"
     elif [ -d "$TRAJS_OH/$trajs_dir" ]; then
         echo "$TRAJS_OH/$trajs_dir"
@@ -144,16 +149,23 @@ sync_reports() {
 process_models() {
     local action=$1
     
-    # Read models from JSON and process each
+    # Read models from JSON and process each (fourth column: docent_id or empty)
     local models=$(cd "$REPO_DIR" && uv run python -c "
 import json
 with open('models.json') as f:
     models = json.load(f)
 for name, cfg in models.items():
-    print(f\"{name}|{cfg['trajs_dir']}|{cfg['logs_dir']}|{cfg['report_file']}\")
+    docent_id = cfg.get('docent_id') or ''
+    print(f\"{name}|{cfg['trajs_dir']}|{cfg['logs_dir']}|{cfg['report_file']}|{docent_id}\")
 ")
     
-    while IFS='|' read -r model_name trajs_dir logs_dir report_file; do
+    local new_only="${2:-}"
+    while IFS='|' read -r model_name trajs_dir logs_dir report_file docent_id; do
+        if [ "$new_only" = "new-only" ] && [ -n "$docent_id" ]; then
+            echo ""
+            echo "[Skip] $model_name (already has docent_id, use without new-only to re-push)"
+            continue
+        fi
         if [ "$action" = "gcs" ] || [ "$action" = "all" ]; then
             push_gcs "$model_name" "$trajs_dir" "$logs_dir" "$report_file"
         fi
@@ -165,18 +177,19 @@ for name, cfg in models.items():
 
 # Parse args
 TARGET="${1:-all}"
+NEW_ONLY="${2:-}"
 
 case "$TARGET" in
     gcs)
         echo "Pushing to GCS..."
-        process_models "gcs"
+        process_models "gcs" "$NEW_ONLY"
         sync_reports
         echo ""
         echo "Done! View at: gsutil ls $BUCKET/"
         ;;
     docent)
         echo "Pushing to Docent..."
-        process_models "docent"
+        process_models "docent" "$NEW_ONLY"
         sync_reports
         echo ""
         echo "=========================================="
@@ -188,7 +201,7 @@ case "$TARGET" in
         ;;
     all)
         echo "Pushing to GCS and Docent..."
-        process_models "all"
+        process_models "all" "$NEW_ONLY"
         sync_reports
         echo ""
         echo "=========================================="
@@ -202,7 +215,8 @@ case "$TARGET" in
         done
         ;;
     *)
-        echo "Usage: $0 [gcs|docent|all]"
+        echo "Usage: $0 [gcs|docent|all] [new-only]"
+        echo "  new-only: when pushing to Docent, skip models that already have docent_id (keeps existing links)"
         exit 1
         ;;
 esac
