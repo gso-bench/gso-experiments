@@ -383,14 +383,14 @@ for metric, metric_label, filename in [
             texts.append(ax.text(d["date"], d[metric], d["label"],
                                  fontsize=6.5, color=d["color"], fontweight='bold'))
 
-        # Trend line (linear regression on values vs time)
+        # Exponential trend: fit linear in log-space → straight on log, curved on linear
         valid = np.isfinite(vals) & (vals > 0)
         if valid.sum() >= 3:
             ords = metric_ordinals[valid]
-            y_vals = vals[valid]
-            coeffs = np.polyfit(ords, y_vals, 1)
+            log_y = np.log(vals[valid])
+            coeffs = np.polyfit(ords, log_y, 1)  # log(y) = a*t + b
             trend_dates = np.linspace(ords.min() - 30, ords.max() + 30, 200)
-            trend_vals = np.polyval(coeffs, trend_dates)
+            trend_vals = np.exp(np.polyval(coeffs, trend_dates))
             trend_dt = [datetime.datetime.fromordinal(int(o)) for o in trend_dates]
             ax.plot(trend_dt, trend_vals, color='gray', linestyle='--',
                     linewidth=1.5, alpha=0.5, zorder=1)
