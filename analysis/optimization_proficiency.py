@@ -400,22 +400,23 @@ for metric, metric_label, filename in [
         ax.text(metric_data[0]["date"], 1.01, "expert level",
                 color="red", fontsize=8, alpha=0.5, va="bottom")
 
+        # Derive y-limits from data: pad below the min, always show expert line
+        y_min = min(d[metric] for d in metric_data)
+        y_lo = y_min * 0.75  # 25% padding below lowest point
+        y_hi = 1.15          # always show expert level (1.0) with room for label
+
         if is_log:
             ax.set_yscale("log", base=2)
-            if metric == "p50":
-                yticks = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-                ax.set_ylim(0.35, 1.15)
-            else:
-                yticks = [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0]
-                ax.set_ylim(0.08, 1.15)
+            ax.set_ylim(y_lo, y_hi)
+            # Auto-generate clean tick values spanning the range
+            all_ticks = [0.02, 0.03, 0.05, 0.07, 0.1, 0.15, 0.2, 0.3, 0.4,
+                         0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+            yticks = [t for t in all_ticks if y_lo <= t <= y_hi]
             ax.set_yticks(yticks)
             ax.set_yticklabels([f"{v:.0%}" for v in yticks])
         else:
             ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
-            if metric == "p50":
-                ax.set_ylim(0.3, 1.1)
-            else:
-                ax.set_ylim(0.0, 1.1)
+            ax.set_ylim(max(0, y_lo), y_hi)
 
         ax.set_xlabel("Model Release Date", fontsize=11)
         ax.set_ylabel("Optimization Level (model / expert speedup)", fontsize=11)
