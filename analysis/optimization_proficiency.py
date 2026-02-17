@@ -395,15 +395,18 @@ for metric, metric_label, filename in [
             ax.plot(trend_dt, trend_vals, color='gray', linestyle='--',
                     linewidth=1.5, alpha=0.5, zorder=1)
 
-        # Expert level reference
-        ax.axhline(y=1.0, color="red", linestyle="--", alpha=0.3, linewidth=1.5)
-        ax.text(metric_data[0]["date"], 1.01, "expert level",
-                color="red", fontsize=8, alpha=0.5, va="bottom")
-
-        # Derive y-limits from data: pad below the min, always show expert line
+        # Derive y-limits from data with padding
         y_min = min(d[metric] for d in metric_data)
+        y_max = max(d[metric] for d in metric_data)
         y_lo = y_min * 0.75  # 25% padding below lowest point
-        y_hi = 1.15          # always show expert level (1.0) with room for label
+        y_hi = y_max * 1.25  # 25% padding above highest point
+
+        # Show expert level reference only if it's within or near the data range
+        if y_hi >= 0.7:  # only if top of data is close enough to expert level
+            ax.axhline(y=1.0, color="red", linestyle="--", alpha=0.3, linewidth=1.5)
+            ax.text(metric_data[0]["date"], 1.01, "expert level",
+                    color="red", fontsize=8, alpha=0.5, va="bottom")
+            y_hi = max(y_hi, 1.08)  # ensure expert line is visible
 
         if is_log:
             ax.set_yscale("log", base=2)
