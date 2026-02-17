@@ -1,21 +1,17 @@
 """
 Optimization Proficiency Level (OPL): measuring optimization capability scaling.
 
-Unlike METR's time-horizon (which measures long-horizon coding ability), OPL
-measures something specific to optimization: how close to expert-level speedup
-can a model reliably achieve?
+Adapts METR's time-horizon methodology to optimization. METR asks: "at 50%
+success, how long a task can the model handle?" We ask: "at 50% success,
+what fraction of expert speedup can the model achieve?"
 
-Key insight: optimization is inherently continuous. A model might achieve 0%,
-50%, or 100%+ of the expert's speedup. By treating the "optimization level"
-(model_speedup / expert_speedup) as a continuous variable, we can define:
+    P(optimization_level >= t) = sigma(alpha + beta * t)
+    50% OPL horizon = -alpha/beta
 
-    P(optimization_level >= t | model) = sigma(alpha + beta * t)
+where optimization_level = model_speedup / expert_speedup.
 
-The "50% optimization level" = -alpha/beta = the fraction of expert speedup
-at which the model's success rate crosses 50%.
-
-This is distinct from coding ability because it measures the model's
-understanding of WHERE and HOW to optimize, not just its ability to write code.
+Higher OPL = better optimizer. Track over model generations to measure
+optimization capability scaling (distinct from general coding ability).
 """
 
 import json
@@ -387,34 +383,15 @@ print(f"Saved: optimization_partial.png")
 # ---------------------------------------------------------------------------
 summary = {
     "description": (
-        "Optimization Proficiency Level (OPL): measures how close to expert-level "
-        "speedup a model can reliably achieve. Unlike METR's time-horizon (which "
-        "measures long-horizon coding ability), OPL specifically measures optimization "
-        "capability — the ability to identify WHERE and HOW to optimize code."
+        "Optimization Proficiency Level (OPL): at 50% success rate, what fraction of "
+        "expert speedup can the model achieve? Analogous to METR's time-horizon "
+        "(at 50% success, how long a task?) but for optimization capability."
     ),
     "methodology": (
-        "For each (model, instance) pair where tests pass, compute optimization_level = "
-        "model_speedup / expert_speedup. Fit logistic: P(level >= t) = sigma(alpha + beta * t). "
-        "The 50% OPL = -alpha/beta = the optimization fraction at 50% success. "
-        "CIs via hierarchical bootstrap (repos -> instances)."
+        "optimization_level = model_speedup / expert_speedup. "
+        "Fit logistic: P(level >= t) = sigma(alpha + beta * t). "
+        "50% OPL horizon = -alpha/beta. CIs via hierarchical bootstrap."
     ),
-    "key_findings": {
-        "continuous_metric": (
-            "Optimization is inherently continuous. Even when models 'fail' (don't match "
-            "expert speedup), they achieve 65-85% of the expert's speedup on median. "
-            "Only 4-24% of test-passing attempts produce no speedup at all."
-        ),
-        "technique_gap": (
-            "Models struggle most with compiled-language optimizations (SIMD, ufuncs, "
-            "C/C++ rewrites). Python-level and caching optimizations are much easier. "
-            "This is a capability gap specific to optimization, not coding in general."
-        ),
-        "scaling_proposal": (
-            "Track 50% OPL over model generations. If it grows consistently toward and "
-            "past 1.0 (expert level), that demonstrates exponential improvement in "
-            "optimization capability specifically."
-        ),
-    },
     "models": {},
 }
 
