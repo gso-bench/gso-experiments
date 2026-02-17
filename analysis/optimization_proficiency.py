@@ -164,18 +164,26 @@ for row in ds:
 
 # ---------------------------------------------------------------------------
 # Compute optimization level (= model_speedup / expert_speedup) per model
+# Uses ALL instances as denominator — test failures count as ratio=0.
+# This makes the logistic directly comparable to leaderboard opt@1.
 # ---------------------------------------------------------------------------
+all_instance_ids = sorted(instance_expert_speedup.keys())
+
 model_ratios = {}  # model -> list of (inst_id, ratio)
 for model in MODELS:
     ratios = []
-    for inst_id, r in all_results[model].items():
-        if r is None or not r.get("test_passed"):
-            continue
-        expert_sp = instance_expert_speedup.get(inst_id)
-        model_sp = r.get("gm_speedup_patch_base")
-        if not expert_sp or not model_sp:
-            continue
-        ratios.append((inst_id, model_sp / expert_sp))
+    for inst_id in all_instance_ids:
+        r = all_results[model].get(inst_id)
+        if r and r.get("test_passed"):
+            model_sp = r.get("gm_speedup_patch_base")
+            expert_sp = instance_expert_speedup[inst_id]
+            if model_sp and expert_sp:
+                ratios.append((inst_id, model_sp / expert_sp))
+            else:
+                ratios.append((inst_id, 0.0))
+        else:
+            # Test failure or missing result → ratio = 0
+            ratios.append((inst_id, 0.0))
     model_ratios[model] = ratios
 
 # ---------------------------------------------------------------------------
@@ -236,11 +244,12 @@ print("=" * 70)
 print()
 
 fit_results = {}
-print(f"{'Model':20s} {'n':>4s} {'alpha':>7s} {'beta':>7s} {'p50 OPL':>10s} {'p80 OPL':>10s} {'p50 95% CI':>20s} {'p80 95% CI':>20s}")
-print("-" * 95)
+print(f"{'Model':20s} {'n':>4s} {'pass':>5s} {'alpha':>7s} {'beta':>7s} {'p50 OPL':>10s} {'p80 OPL':>10s} {'p50 95% CI':>20s} {'p80 95% CI':>20s}")
+print("-" * 105)
 
 for model in MODELS:
     ratios = model_ratios[model]
+    n_nonzero = sum(1 for _, r in ratios if r > 0)
     repos = [instance_meta.get(iid, {}).get("repo", "?") for iid, _ in ratios]
     alpha, beta, level_50, level_80 = fit_opl(ratios)
     p50_ci, p80_ci = bootstrap_opl(ratios, repos)
@@ -249,21 +258,21 @@ for model in MODELS:
         "level_50": level_50, "level_80": level_80,
         "p50_ci_lo": p50_ci[0], "p50_ci_hi": p50_ci[1],
         "p80_ci_lo": p80_ci[0], "p80_ci_hi": p80_ci[1],
-        "n": len(ratios),
+        "n": len(ratios), "n_nonzero": n_nonzero,
     }
     p50_ci_str = f"[{p50_ci[0]:.3f}, {p50_ci[1]:.3f}]" if p50_ci[0] else "N/A"
     p80_ci_str = f"[{p80_ci[0]:.3f}, {p80_ci[1]:.3f}]" if p80_ci[0] else "N/A"
     label = MODEL_LABELS.get(model, model)
-    print(f"{label:20s} {len(ratios):4d} {alpha:7.3f} {beta:7.3f} {level_50:10.1%} {level_80:10.1%} {p50_ci_str:>20s} {p80_ci_str:>20s}")
+    print(f"{label:20s} {len(ratios):4d} {n_nonzero:5d} {alpha:7.3f} {beta:7.3f} {level_50:10.1%} {level_80:10.1%} {p50_ci_str:>20s} {p80_ci_str:>20s}")
 
-# Models with enough data for reliable plots
-plotable_models = [m for m in MODELS if fit_results[m]["n"] >= MIN_N]
+# Models with enough non-zero (test-passing) instances for reliable logistic fit
+plotable_models = [m for m in MODELS if fit_results[m]["n_nonzero"] >= MIN_N]
 sorted_models = sorted(plotable_models, key=lambda m: -fit_results[m]["level_50"])
 
-print(f"\nModels with n >= {MIN_N} for plots: {len(sorted_models)}")
+print(f"\nModels with >= {MIN_N} test-passing instances for plots: {len(sorted_models)}")
 for m in MODELS:
-    if fit_results[m]["n"] < MIN_N:
-        print(f"  Skipping {MODEL_LABELS.get(m, m)} (n={fit_results[m]['n']})")
+    if fit_results[m]["n_nonzero"] < MIN_N:
+        print(f"  Skipping {MODEL_LABELS.get(m, m)} (n_pass={fit_results[m]['n_nonzero']})")
 
 # ---------------------------------------------------------------------------
 # Figure 1: Optimization Proficiency Curves (only models with enough data)
@@ -344,22 +353,27 @@ for metric, metric_label, filename in [
     ("p50", "p50 OPL", "opl_over_time_p50.png"),
     ("p80", "p80 OPL", "opl_over_time_p80.png"),
 ]:
+    # Filter to models with positive metric values (negative = undefined)
+    metric_data = [d for d in plot_data if d[metric] > 0]
+    metric_ordinals = np.array([d["date"].toordinal() for d in metric_data])
+
     fig, (ax_lin, ax_log) = plt.subplots(1, 2, figsize=(14, 6))
-    vals = np.array([d[metric] for d in plot_data])
+    vals = np.array([d[metric] for d in metric_data])
     ci_lo_key = f"{metric}_ci_lo"
     ci_hi_key = f"{metric}_ci_hi"
 
     for ax, title_suffix, is_log in [(ax_lin, "(linear scale)", False),
                                       (ax_log, "(log scale)", True)]:
         texts = []
-        for d in plot_data:
+        for d in metric_data:
             # CI error bars (light gray)
             if d[ci_lo_key] is not None and d[ci_hi_key] is not None:
-                yerr_lo = d[metric] - d[ci_lo_key]
-                yerr_hi = d[ci_hi_key] - d[metric]
-                ax.errorbar(d["date"], d[metric], yerr=[[yerr_lo], [yerr_hi]],
-                            fmt='none', ecolor='lightgray', capsize=3,
-                            capthick=1, elinewidth=1.5, zorder=2)
+                yerr_lo = max(0, d[metric] - d[ci_lo_key])
+                yerr_hi = max(0, d[ci_hi_key] - d[metric])
+                if yerr_lo > 0 or yerr_hi > 0:
+                    ax.errorbar(d["date"], d[metric], yerr=[[yerr_lo], [yerr_hi]],
+                                fmt='none', ecolor='lightgray', capsize=3,
+                                capthick=1, elinewidth=1.5, zorder=2)
 
             # Point
             ax.scatter(d["date"], d[metric], s=80, color=d["color"],
@@ -372,7 +386,7 @@ for metric, metric_label, filename in [
         # Trend line (linear regression on values vs time)
         valid = np.isfinite(vals) & (vals > 0)
         if valid.sum() >= 3:
-            ords = date_ordinals[valid]
+            ords = metric_ordinals[valid]
             y_vals = vals[valid]
             coeffs = np.polyfit(ords, y_vals, 1)
             trend_dates = np.linspace(ords.min() - 30, ords.max() + 30, 200)
@@ -383,7 +397,7 @@ for metric, metric_label, filename in [
 
         # Expert level reference
         ax.axhline(y=1.0, color="red", linestyle="--", alpha=0.3, linewidth=1.5)
-        ax.text(plot_data[0]["date"], 1.01, "expert level",
+        ax.text(metric_data[0]["date"], 1.01, "expert level",
                 color="red", fontsize=8, alpha=0.5, va="bottom")
 
         if is_log:
@@ -447,6 +461,7 @@ for model in all_sorted:
         "label": MODEL_LABELS.get(model, model),
         "release_date": MODEL_RELEASE_DATES.get(model, "unknown"),
         "n_instances": fr["n"],
+        "n_test_passing": fr["n_nonzero"],
         "p50_opl": round(fr["level_50"], 4),
         "p80_opl": round(fr["level_80"], 4),
         "logistic_alpha": round(fr["alpha"], 4),

@@ -2,212 +2,215 @@
   "description": "Optimization Proficiency Level (OPL): at 50% success rate, what optimization level (model_speedup / expert_speedup) can the model achieve? Analogous to METR's p50 time-horizon.",
   "methodology": "optimization_level = model_speedup / expert_speedup. Fit logistic: P(level >= t) = sigma(alpha + beta * t). p50 OPL = -alpha/beta. p80 OPL = -(alpha - ln4)/beta. CIs via hierarchical bootstrap.",
   "models": {
-    "gpt-5": {
-      "label": "GPT-5",
-      "release_date": "2025-08-07",
-      "n_instances": 7,
-      "p50_opl": 1.4323,
-      "p80_opl": 1.2786,
-      "logistic_alpha": 12.919,
-      "logistic_beta": -9.02,
-      "p50_opl_95ci": [
-        1.4165,
-        1.716
-      ],
-      "p80_opl_95ci": [
-        1.2831,
-        1.485
-      ]
-    },
-    "glm-4.5": {
-      "label": "GLM-4.5",
-      "release_date": "2025-07-28",
-      "n_instances": 3,
-      "p50_opl": 1.429,
-      "p80_opl": 1.1435,
-      "logistic_alpha": 6.9378,
-      "logistic_beta": -4.8548
-    },
-    "claude-sonnet-4": {
-      "label": "Claude Sonnet 4",
-      "release_date": "2025-05-22",
-      "n_instances": 4,
-      "p50_opl": 1.374,
-      "p80_opl": 1.252,
-      "logistic_alpha": 15.6132,
-      "logistic_beta": -11.3633
-    },
-    "gemini-2.5-pro": {
-      "label": "Gemini 2.5 Pro",
-      "release_date": "2025-06-17",
-      "n_instances": 4,
-      "p50_opl": 1.3705,
-      "p80_opl": 1.2922,
-      "logistic_alpha": 24.2615,
-      "logistic_beta": -17.7025
-    },
-    "kimi-k2": {
-      "label": "Kimi K2",
-      "release_date": "2025-07-11",
-      "n_instances": 5,
-      "p50_opl": 1.3536,
-      "p80_opl": 1.0503,
-      "logistic_alpha": 6.1872,
-      "logistic_beta": -4.5708
-    },
-    "claude-opus-4": {
-      "label": "Claude Opus 4",
-      "release_date": "2025-05-22",
-      "n_instances": 7,
-      "p50_opl": 1.3221,
-      "p80_opl": 1.1467,
-      "logistic_alpha": 10.4507,
-      "logistic_beta": -7.9045
-    },
-    "qwen3-coder": {
-      "label": "Qwen3-Coder",
-      "release_date": "2025-07-22",
-      "n_instances": 5,
-      "p50_opl": 1.0661,
-      "p80_opl": 0.9375,
-      "logistic_alpha": 11.488,
-      "logistic_beta": -10.7757
-    },
     "claude-opus-4.6": {
       "label": "Claude Opus 4.6",
       "release_date": "2026-02-05",
-      "n_instances": 84,
-      "p50_opl": 0.9527,
-      "p80_opl": 0.7022,
-      "logistic_alpha": 5.2718,
-      "logistic_beta": -5.5335,
+      "n_instances": 99,
+      "n_test_passing": 84,
+      "p50_opl": 0.8151,
+      "p80_opl": 0.406,
+      "logistic_alpha": 2.762,
+      "logistic_beta": -3.3886,
       "p50_opl_95ci": [
-        0.8672,
-        1.1129
+        0.688,
+        1.0611
       ],
       "p80_opl_95ci": [
-        0.5875,
-        0.8011
+        0.2407,
+        0.6744
       ]
     },
     "claude-opus-4.5": {
       "label": "Claude Opus 4.5",
       "release_date": "2025-11-24",
-      "n_instances": 78,
-      "p50_opl": 0.9023,
-      "p80_opl": 0.6655,
-      "logistic_alpha": 5.2835,
-      "logistic_beta": -5.8557,
+      "n_instances": 99,
+      "n_test_passing": 78,
+      "p50_opl": 0.7046,
+      "p80_opl": 0.28,
+      "logistic_alpha": 2.3005,
+      "logistic_beta": -3.265,
       "p50_opl_95ci": [
-        0.7869,
-        1.0282
+        0.5894,
+        0.8847
       ],
       "p80_opl_95ci": [
-        0.5713,
-        0.7772
+        0.1059,
+        0.5488
       ]
     },
     "gpt-5.2": {
       "label": "GPT-5.2",
       "release_date": "2025-12-11",
-      "n_instances": 80,
-      "p50_opl": 0.8576,
-      "p80_opl": 0.5127,
-      "logistic_alpha": 3.4466,
-      "logistic_beta": -4.0189,
+      "n_instances": 99,
+      "n_test_passing": 80,
+      "p50_opl": 0.67,
+      "p80_opl": 0.1739,
+      "logistic_alpha": 1.8722,
+      "logistic_beta": -2.7945,
       "p50_opl_95ci": [
-        0.7085,
-        0.9938
+        0.4095,
+        0.9041
       ],
       "p80_opl_95ci": [
-        0.3905,
-        0.6786
+        0.0227,
+        0.5158
       ]
     },
     "gemini-3-pro": {
       "label": "Gemini 3 Pro",
       "release_date": "2025-11-18",
-      "n_instances": 79,
-      "p50_opl": 0.8279,
-      "p80_opl": 0.5907,
-      "logistic_alpha": 4.8384,
-      "logistic_beta": -5.8443,
+      "n_instances": 99,
+      "n_test_passing": 79,
+      "p50_opl": 0.65,
+      "p80_opl": 0.2642,
+      "logistic_alpha": 2.3355,
+      "logistic_beta": -3.5933,
       "p50_opl_95ci": [
-        0.7514,
-        0.9347
+        0.4664,
+        0.7957
       ],
       "p80_opl_95ci": [
-        0.5027,
-        0.7342
+        0.0574,
+        0.4782
       ]
     },
     "claude-sonnet-4.5": {
       "label": "Claude Sonnet 4.5",
       "release_date": "2025-09-29",
-      "n_instances": 78,
-      "p50_opl": 0.8074,
-      "p80_opl": 0.486,
-      "logistic_alpha": 3.4824,
-      "logistic_beta": -4.3129,
+      "n_instances": 99,
+      "n_test_passing": 78,
+      "p50_opl": 0.6075,
+      "p80_opl": 0.1409,
+      "logistic_alpha": 1.8048,
+      "logistic_beta": -2.971,
       "p50_opl_95ci": [
-        0.6902,
-        0.9712
+        0.4624,
+        0.8147
       ],
       "p80_opl_95ci": [
-        0.372,
-        0.6697
+        0.0259,
+        0.3884
       ]
     },
     "gpt-5.1": {
       "label": "GPT-5.1",
       "release_date": "2025-11-19",
-      "n_instances": 77,
-      "p50_opl": 0.6832,
-      "p80_opl": 0.3919,
-      "logistic_alpha": 3.2518,
-      "logistic_beta": -4.7599,
+      "n_instances": 99,
+      "n_test_passing": 77,
+      "p50_opl": 0.4985,
+      "p80_opl": 0.0977,
+      "logistic_alpha": 1.724,
+      "logistic_beta": -3.4581,
       "p50_opl_95ci": [
-        0.5498,
-        0.861
+        0.276,
+        0.748
       ],
       "p80_opl_95ci": [
-        0.2592,
-        0.6226
-      ]
-    },
-    "o3": {
-      "label": "o3",
-      "release_date": "2025-04-16",
-      "n_instances": 47,
-      "p50_opl": 0.6533,
-      "p80_opl": 0.283,
-      "logistic_alpha": 2.4459,
-      "logistic_beta": -3.7441,
-      "p50_opl_95ci": [
-        0.491,
-        0.9657
-      ],
-      "p80_opl_95ci": [
-        0.1372,
-        0.5853
+        0.0176,
+        0.4465
       ]
     },
     "gemini-3-flash": {
       "label": "Gemini 3 Flash",
       "release_date": "2025-12-17",
-      "n_instances": 71,
-      "p50_opl": 0.5906,
-      "p80_opl": 0.2822,
-      "logistic_alpha": 2.655,
-      "logistic_beta": -4.4957,
+      "n_instances": 99,
+      "n_test_passing": 71,
+      "p50_opl": 0.3623,
+      "p80_opl": -0.0543,
+      "logistic_alpha": 1.2057,
+      "logistic_beta": -3.3274,
       "p50_opl_95ci": [
-        0.4751,
-        0.8939
+        0.2265,
+        0.5776
       ],
       "p80_opl_95ci": [
-        0.1678,
-        0.4834
+        0.0123,
+        0.2142
       ]
+    },
+    "o3": {
+      "label": "o3",
+      "release_date": "2025-04-16",
+      "n_instances": 99,
+      "n_test_passing": 47,
+      "p50_opl": 0.0592,
+      "p80_opl": -0.548,
+      "logistic_alpha": 0.1352,
+      "logistic_beta": -2.2829,
+      "p50_opl_95ci": [
+        0.103,
+        0.5764
+      ]
+    },
+    "qwen3-coder": {
+      "label": "Qwen3-Coder",
+      "release_date": "2025-07-22",
+      "n_instances": 99,
+      "n_test_passing": 5,
+      "p50_opl": -2.1063,
+      "p80_opl": -3.2726,
+      "logistic_alpha": -2.5036,
+      "logistic_beta": -1.1886
+    },
+    "claude-opus-4": {
+      "label": "Claude Opus 4",
+      "release_date": "2025-05-22",
+      "n_instances": 99,
+      "n_test_passing": 7,
+      "p50_opl": -4.8489,
+      "p80_opl": -7.6806,
+      "logistic_alpha": -2.3739,
+      "logistic_beta": -0.4896
+    },
+    "kimi-k2": {
+      "label": "Kimi K2",
+      "release_date": "2025-07-11",
+      "n_instances": 99,
+      "n_test_passing": 5,
+      "p50_opl": -5.768,
+      "p80_opl": -8.6582,
+      "logistic_alpha": -2.7667,
+      "logistic_beta": -0.4797
+    },
+    "claude-sonnet-4": {
+      "label": "Claude Sonnet 4",
+      "release_date": "2025-05-22",
+      "n_instances": 99,
+      "n_test_passing": 4,
+      "p50_opl": -8.9006,
+      "p80_opl": -12.9888,
+      "logistic_alpha": -3.0182,
+      "logistic_beta": -0.3391
+    },
+    "gpt-5": {
+      "label": "GPT-5",
+      "release_date": "2025-08-07",
+      "n_instances": 99,
+      "n_test_passing": 7,
+      "p50_opl": -9.0934,
+      "p80_opl": -14.2253,
+      "logistic_alpha": -2.4564,
+      "logistic_beta": -0.2701
+    },
+    "glm-4.5": {
+      "label": "GLM-4.5",
+      "release_date": "2025-07-28",
+      "n_instances": 99,
+      "n_test_passing": 3,
+      "p50_opl": -9.1548,
+      "p80_opl": -12.9667,
+      "logistic_alpha": -3.3294,
+      "logistic_beta": -0.3637
+    },
+    "gemini-2.5-pro": {
+      "label": "Gemini 2.5 Pro",
+      "release_date": "2025-06-17",
+      "n_instances": 99,
+      "n_test_passing": 4,
+      "p50_opl": -9.5085,
+      "p80_opl": -13.8683,
+      "logistic_alpha": -3.0234,
+      "logistic_beta": -0.318
     }
   }
 }
