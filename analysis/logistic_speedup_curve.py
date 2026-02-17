@@ -297,7 +297,6 @@ ax.grid(True, alpha=0.2)
 
 plt.tight_layout()
 plt.savefig(os.path.join(OUT_DIR, "difficulty_horizon.png"), dpi=150, bbox_inches="tight")
-plt.savefig(os.path.join(OUT_DIR, "difficulty_horizon.pdf"), bbox_inches="tight")
 print("\nSaved: difficulty_horizon.png")
 
 # ---------------------------------------------------------------------------
@@ -363,7 +362,6 @@ for ax, x_all, x_label, x_lim, x_ticks, title, bin_edges_local in [
 fig2.suptitle("Finding the Right Difficulty Axis for GSO", fontsize=13, fontweight="bold")
 plt.tight_layout()
 plt.savefig(os.path.join(OUT_DIR, "difficulty_axis_comparison.png"), dpi=150, bbox_inches="tight")
-plt.savefig(os.path.join(OUT_DIR, "difficulty_axis_comparison.pdf"), bbox_inches="tight")
 print("Saved: difficulty_axis_comparison.png")
 
 # ---------------------------------------------------------------------------
