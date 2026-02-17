@@ -1,98 +1,109 @@
 {
-  "description": "Optimization Proficiency Level (OPL): measures how close to expert-level speedup a model can reliably achieve. Unlike METR's time-horizon (which measures long-horizon coding ability), OPL specifically measures optimization capability \u2014 the ability to identify WHERE and HOW to optimize code.",
-  "methodology": "For each (model, instance) pair where tests pass, compute optimization_level = model_speedup / expert_speedup. Fit logistic: P(level >= t) = sigma(alpha + beta * t). The 50% OPL = -alpha/beta = the optimization fraction at 50% success. CIs via hierarchical bootstrap (repos -> instances).",
-  "key_findings": {
-    "continuous_metric": "Optimization is inherently continuous. Even when models 'fail' (don't match expert speedup), they achieve 65-85% of the expert's speedup on median. Only 4-24% of test-passing attempts produce no speedup at all.",
-    "technique_gap": "Models struggle most with compiled-language optimizations (SIMD, ufuncs, C/C++ rewrites). Python-level and caching optimizations are much easier. This is a capability gap specific to optimization, not coding in general.",
-    "scaling_proposal": "Track 50% OPL over model generations. If it grows consistently toward and past 1.0 (expert level), that demonstrates exponential improvement in optimization capability specifically."
-  },
+  "description": "Optimization Proficiency Level (OPL): at 50% success rate, what optimization level (model_speedup / expert_speedup) can the model achieve? Analogous to METR's p50 time-horizon.",
+  "methodology": "optimization_level = model_speedup / expert_speedup. Fit logistic: P(level >= t) = sigma(alpha + beta * t). p50 OPL = -alpha/beta. p80 OPL = -(alpha - ln4)/beta. CIs via hierarchical bootstrap.",
   "models": {
     "claude-opus-4.6": {
       "label": "Claude Opus 4.6",
+      "release_date": "2026-02-05",
       "n_instances": 84,
-      "fifty_pct_opl": 0.9358,
+      "p50_opl": 0.9358,
+      "p80_opl": 0.6844,
       "logistic_alpha": 5.1598,
       "logistic_beta": -5.5138,
-      "opl_95ci": [
-        0.8514,
-        1.045
+      "p50_opl_95ci": [
+        0.852,
+        1.0567
       ]
     },
     "claude-opus-4.5": {
       "label": "Claude Opus 4.5",
+      "release_date": "2025-11-24",
       "n_instances": 78,
-      "fifty_pct_opl": 0.8941,
+      "p50_opl": 0.8941,
+      "p80_opl": 0.6427,
       "logistic_alpha": 4.9303,
       "logistic_beta": -5.5144,
-      "opl_95ci": [
-        0.7784,
-        1.0186
+      "p50_opl_95ci": [
+        0.7693,
+        1.0161
       ]
     },
     "gpt-5.2": {
       "label": "GPT-5.2",
+      "release_date": "2025-12-11",
       "n_instances": 80,
-      "fifty_pct_opl": 0.8477,
+      "p50_opl": 0.8477,
+      "p80_opl": 0.5014,
       "logistic_alpha": 3.3932,
       "logistic_beta": -4.0026,
-      "opl_95ci": [
-        0.6877,
-        0.9704
+      "p50_opl_95ci": [
+        0.69,
+        0.98
       ]
     },
     "gemini-3-pro": {
       "label": "Gemini 3 Pro",
+      "release_date": "2025-11-18",
       "n_instances": 79,
-      "fifty_pct_opl": 0.8196,
+      "p50_opl": 0.8196,
+      "p80_opl": 0.5762,
       "logistic_alpha": 4.6685,
       "logistic_beta": -5.6964,
-      "opl_95ci": [
-        0.7359,
-        0.913
+      "p50_opl_95ci": [
+        0.738,
+        0.9116
       ]
     },
     "claude-sonnet-4.5": {
       "label": "Claude Sonnet 4.5",
+      "release_date": "2025-09-29",
       "n_instances": 78,
-      "fifty_pct_opl": 0.8044,
+      "p50_opl": 0.8044,
+      "p80_opl": 0.4728,
       "logistic_alpha": 3.3636,
       "logistic_beta": -4.1816,
-      "opl_95ci": [
-        0.6953,
-        0.986
+      "p50_opl_95ci": [
+        0.6966,
+        0.9869
       ]
     },
     "gpt-5.1": {
       "label": "GPT-5.1",
+      "release_date": "2025-11-19",
       "n_instances": 77,
-      "fifty_pct_opl": 0.6751,
+      "p50_opl": 0.6751,
+      "p80_opl": 0.3766,
       "logistic_alpha": 3.1352,
       "logistic_beta": -4.6441,
-      "opl_95ci": [
-        0.5551,
-        0.8349
+      "p50_opl_95ci": [
+        0.5606,
+        0.8411
       ]
     },
     "o3": {
       "label": "o3",
+      "release_date": "2025-04-16",
       "n_instances": 47,
-      "fifty_pct_opl": 0.6348,
+      "p50_opl": 0.6348,
+      "p80_opl": 0.2746,
       "logistic_alpha": 2.4429,
       "logistic_beta": -3.8483,
-      "opl_95ci": [
-        0.4831,
-        0.9243
+      "p50_opl_95ci": [
+        0.4771,
+        0.9105
       ]
     },
     "gemini-3-flash": {
       "label": "Gemini 3 Flash",
+      "release_date": "2025-12-17",
       "n_instances": 71,
-      "fifty_pct_opl": 0.5863,
+      "p50_opl": 0.5863,
+      "p80_opl": 0.2537,
       "logistic_alpha": 2.4433,
       "logistic_beta": -4.1671,
-      "opl_95ci": [
-        0.486,
-        0.8589
+      "p50_opl_95ci": [
+        0.4838,
+        0.8692
       ]
     }
   }

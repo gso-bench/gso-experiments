@@ -379,18 +379,130 @@ plt.savefig(os.path.join(OUT_DIR, "optimization_partial.png"), dpi=150, bbox_inc
 print(f"Saved: optimization_partial.png")
 
 # ---------------------------------------------------------------------------
+# Compute p50 and p80 OPL (empirical, from logistic fit)
+# ---------------------------------------------------------------------------
+# p50 OPL: optimization level at which P(achieving) = 50% → -alpha/beta
+# p80 OPL: optimization level at which P(achieving) = 80% → -(alpha - log(4))/beta
+#   since sigma(x)=0.8 → x=log(4)≈1.386
+
+import datetime
+
+for model in MODELS:
+    fr = fit_results[model]
+    alpha, beta = fr["alpha"], fr["beta"]
+    fr["level_80"] = -(alpha - np.log(4)) / beta if beta != 0 else float("inf")
+
+# Model release dates (from METR eval-analysis-public + web search)
+MODEL_RELEASE_DATES = {
+    "claude-opus-4.6": "2026-02-05",
+    "claude-opus-4.5": "2025-11-24",
+    "claude-sonnet-4.5": "2025-09-29",
+    "gpt-5.2": "2025-12-11",
+    "gpt-5.1": "2025-11-19",
+    "gemini-3-pro": "2025-11-18",
+    "gemini-3-flash": "2025-12-17",
+    "o3": "2025-04-16",
+}
+
+# ---------------------------------------------------------------------------
+# Figure 4: OPL horizon over time (METR-style)
+# ---------------------------------------------------------------------------
+import datetime
+import matplotlib.dates as mdates
+from matplotlib.lines import Line2D
+from adjustText import adjust_text  # pip install adjustText
+
+fig4, (ax_lin, ax_log) = plt.subplots(1, 2, figsize=(14, 6))
+
+plot_data = []
+for model in MODELS:
+    fr = fit_results[model]
+    dt = datetime.datetime.strptime(MODEL_RELEASE_DATES[model], "%Y-%m-%d")
+    plot_data.append({
+        "model": model, "date": dt, "label": MODEL_LABELS[model],
+        "p50": fr["level_50"], "p80": fr["level_80"],
+        "ci_lo": fr.get("ci_lo"), "ci_hi": fr.get("ci_hi"),
+        "color": MODEL_COLORS[model],
+    })
+
+for ax, title_suffix, is_log in [(ax_lin, "(linear scale)", False),
+                                  (ax_log, "(log scale)", True)]:
+    texts = []
+    for d in plot_data:
+        yerr_lo = d["p50"] - d["ci_lo"] if d["ci_lo"] else 0
+        yerr_hi = d["ci_hi"] - d["p50"] if d["ci_hi"] else 0
+        # p50 (filled) with CI
+        ax.errorbar(d["date"], d["p50"], yerr=[[yerr_lo], [yerr_hi]],
+                    fmt='o', color=d["color"], markersize=9,
+                    markeredgecolor='white', markeredgewidth=1.5,
+                    capsize=4, capthick=1.5, elinewidth=1.5, zorder=5)
+        # p80 (hollow)
+        ax.scatter(d["date"], d["p80"], s=50, facecolors='none',
+                   edgecolors=d["color"], linewidths=1.5, zorder=4, alpha=0.7)
+        # Label (will be adjusted)
+        texts.append(ax.text(d["date"], d["p50"], d["label"],
+                             fontsize=7, color=d["color"], fontweight='bold'))
+
+    # Expert level reference
+    ax.axhline(y=1.0, color="red", linestyle="--", alpha=0.4, linewidth=1.5)
+    ax.text(plot_data[0]["date"], 1.01, "expert level",
+            color="red", fontsize=8, alpha=0.6, va="bottom")
+
+    if is_log:
+        ax.set_yscale("log", base=2)
+        yticks = [0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        ax.set_yticks(yticks)
+        ax.set_yticklabels([f"{v:.0%}" for v in yticks])
+        ax.set_ylim(0.2, 1.15)
+    else:
+        ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
+        ax.set_ylim(0.15, 1.1)
+
+    ax.set_xlabel("Model Release Date", fontsize=11)
+    ax.set_ylabel("Optimization Level (model / expert speedup)", fontsize=11)
+    ax.set_title(f"OPL Horizon Over Time {title_suffix}", fontsize=12)
+    ax.grid(True, alpha=0.2)
+
+    legend_elements = [
+        Line2D([0], [0], marker='o', color='gray', markersize=8,
+               markeredgecolor='white', markeredgewidth=1.5, linestyle='None',
+               label='p50 OPL (with 95% CI)'),
+        Line2D([0], [0], marker='o', color='gray', markersize=7,
+               markerfacecolor='none', markeredgewidth=1.5, linestyle='None',
+               label='p80 OPL'),
+    ]
+    ax.legend(handles=legend_elements, fontsize=8, loc='lower right', framealpha=0.9)
+
+    ax.tick_params(axis='x', rotation=30)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+
+    # Adjust text to avoid overlaps
+    try:
+        adjust_text(texts, ax=ax, arrowprops=dict(arrowstyle='-', color='gray',
+                    alpha=0.4, lw=0.5), force_text=(0.3, 0.3))
+    except Exception:
+        pass  # fallback: labels stay where they are
+
+fig4.suptitle("Optimization Proficiency Level Over Time",
+              fontsize=13, fontweight="bold")
+plt.tight_layout()
+plt.savefig(os.path.join(OUT_DIR, "opl_over_time.png"), dpi=150, bbox_inches="tight")
+print(f"Saved: opl_over_time.png")
+
+# ---------------------------------------------------------------------------
 # Summary JSON
 # ---------------------------------------------------------------------------
 summary = {
     "description": (
-        "Optimization Proficiency Level (OPL): at 50% success rate, what fraction of "
-        "expert speedup can the model achieve? Analogous to METR's time-horizon "
-        "(at 50% success, how long a task?) but for optimization capability."
+        "Optimization Proficiency Level (OPL): at 50% success rate, what optimization "
+        "level (model_speedup / expert_speedup) can the model achieve? "
+        "Analogous to METR's p50 time-horizon."
     ),
     "methodology": (
         "optimization_level = model_speedup / expert_speedup. "
         "Fit logistic: P(level >= t) = sigma(alpha + beta * t). "
-        "50% OPL horizon = -alpha/beta. CIs via hierarchical bootstrap."
+        "p50 OPL = -alpha/beta. p80 OPL = -(alpha - ln4)/beta. "
+        "CIs via hierarchical bootstrap."
     ),
     "models": {},
 }
@@ -399,13 +511,15 @@ for model in sorted_models:
     fr = fit_results[model]
     summary["models"][model] = {
         "label": MODEL_LABELS[model],
+        "release_date": MODEL_RELEASE_DATES[model],
         "n_instances": fr["n"],
-        "fifty_pct_opl": round(fr["level_50"], 4),
+        "p50_opl": round(fr["level_50"], 4),
+        "p80_opl": round(fr["level_80"], 4),
         "logistic_alpha": round(fr["alpha"], 4),
         "logistic_beta": round(fr["beta"], 4),
     }
     if fr["ci_lo"]:
-        summary["models"][model]["opl_95ci"] = [
+        summary["models"][model]["p50_opl_95ci"] = [
             round(fr["ci_lo"], 4), round(fr["ci_hi"], 4)
         ]
 
