@@ -1,48 +1,130 @@
 {
-  "description": "METR-style logistic analysis adapted for GSO. The key finding: speedup magnitude alone is NOT a strong predictor of model success (unlike METR's task duration). Splitting by optimization type reveals the real structure: Python-only tasks show a METR-like difficulty gradient, while compiled-code tasks have a flat ~15% solve rate regardless of speedup.",
-  "methodology": "P(solve) = L / (1 + exp(k * (log(x) - log(x0)))). L = ceiling solve rate, k = steepness, x0 = half-max horizon (speedup at which solve rate = L/2). Data: 8 models x ~97 instances = ~750 (model, instance) pairs.",
-  "key_findings": [
-    "Speedup magnitude is NOT a strong predictor of solve rate when all tasks are pooled (solve rate ~20% across all speedup levels)",
-    "Python-only tasks: 26% solve rate, with a clear declining trend as speedup increases",
-    "Compiled-code tasks: 18% solve rate, flat across speedup levels",
-    "Diff size is a strong predictor: <100 lines = 32%, 100-500 = 18%, 500+ = 10%",
-    "File count is a strong predictor: 1 file = 32%, 2-5 = 27%, 6+ = 11%"
-  ],
-  "comparison_to_metr": "METR's time-horizon works because task duration is a reliable difficulty proxy: models approach 100% on short tasks and 0% on long ones. In GSO, speedup magnitude is NOT such a proxy because a 1.3x optimization requiring Cython can be harder than a 8x optimization in pure Python. The compiled-code barrier creates a floor effect that masks the difficulty gradient visible in Python-only tasks.",
-  "logistic_fits": {
-    "python_only": {
-      "n_datapoints": 335,
-      "solve_rate": 0.26,
-      "fit": {
-        "L": 0.611,
-        "k": 0.241,
-        "x0": 1.0
+  "description": "METR-style logistic analysis for GSO. P(solve) = sigma(alpha + beta * log2(expert_speedup)). The 50% horizon is 2^(-alpha/beta): the expert speedup at which the model has a 50% predicted solve rate.",
+  "methodology": "Standard logistic regression via MLE (sklearn, no regularization). 95% CI via hierarchical bootstrap (resample repos, then instances within repos, 2000 iterations). Following METR arXiv:2503.14499.",
+  "models": {
+    "claude-opus-4.5": {
+      "label": "Claude Opus 4.5",
+      "n_instances": 92,
+      "solved": 27,
+      "solve_rate": 0.293,
+      "logistic_fit": {
+        "alpha": -1.0802,
+        "beta": 0.1137,
+        "horizon_50pct": 723.92,
+        "horizon_95ci": [
+          0.62,
+          599.46
+        ]
       }
     },
-    "compiled_code": {
-      "n_datapoints": 378,
-      "solve_rate": 0.18,
-      "fit": {
-        "L": 0.329,
-        "k": 0.05,
-        "x0": 100.0
+    "o3": {
+      "label": "o3",
+      "n_instances": 67,
+      "solved": 9,
+      "solve_rate": 0.134,
+      "logistic_fit": {
+        "alpha": -2.475,
+        "beta": 0.3072,
+        "horizon_50pct": 266.33,
+        "horizon_95ci": [
+          0.75,
+          570.76
+        ]
+      }
+    },
+    "gpt-5.2": {
+      "label": "GPT-5.2",
+      "n_instances": 84,
+      "solved": 28,
+      "solve_rate": 0.333,
+      "logistic_fit": {
+        "alpha": -0.9279,
+        "beta": 0.1298,
+        "horizon_50pct": 141.91,
+        "horizon_95ci": [
+          0.66,
+          489.0
+        ]
+      }
+    },
+    "gemini-3-pro": {
+      "label": "Gemini 3 Pro",
+      "n_instances": 97,
+      "solved": 19,
+      "solve_rate": 0.196,
+      "logistic_fit": {
+        "alpha": -1.9802,
+        "beta": 0.3067,
+        "horizon_50pct": 87.77,
+        "horizon_95ci": [
+          3.2,
+          646.64
+        ]
+      }
+    },
+    "gemini-3-flash": {
+      "label": "Gemini 3 Flash",
+      "n_instances": 93,
+      "solved": 10,
+      "solve_rate": 0.108,
+      "logistic_fit": {
+        "alpha": -1.5156,
+        "beta": -0.4097,
+        "horizon_50pct": 0.08,
+        "horizon_95ci": [
+          0.51,
+          470.63
+        ]
+      }
+    },
+    "gpt-5.1": {
+      "label": "GPT-5.1",
+      "n_instances": 88,
+      "solved": 14,
+      "solve_rate": 0.159,
+      "logistic_fit": {
+        "alpha": -1.4569,
+        "beta": -0.1255,
+        "horizon_50pct": 0.0,
+        "horizon_95ci": [
+          0.53,
+          539.23
+        ]
+      }
+    },
+    "claude-sonnet-4.5": {
+      "label": "Claude Sonnet 4.5",
+      "n_instances": 95,
+      "solved": 15,
+      "solve_rate": 0.158,
+      "logistic_fit": {
+        "alpha": -1.499,
+        "beta": -0.1042,
+        "horizon_50pct": 0.0,
+        "horizon_95ci": [
+          0.53,
+          653.7
+        ]
+      }
+    },
+    "claude-opus-4.6": {
+      "label": "Claude Opus 4.6",
+      "n_instances": 97,
+      "solved": 33,
+      "solve_rate": 0.34,
+      "logistic_fit": {
+        "alpha": -0.6083,
+        "beta": -0.0318,
+        "horizon_50pct": 0.0,
+        "horizon_95ci": [
+          0.57,
+          423.72
+        ]
       }
     }
   },
-  "solve_rates_by_dimension": {
-    "language_type": {
-      "python_only": 0.26,
-      "compiled": 0.18
-    },
-    "diff_size": {
-      "small_lt100": 0.32,
-      "medium_100_500": 0.18,
-      "large_500plus": 0.102
-    },
-    "file_count": {
-      "single_file": 0.318,
-      "multi_2_5": 0.271,
-      "many_6plus": 0.114
-    }
+  "interpretation": {
+    "beta_meaning": "beta < 0 means higher speedup predicts lower solve rate (expected). beta \u2248 0 means speedup magnitude does not predict solvability.",
+    "horizon_meaning": "The 50% horizon is the expert speedup level where the model is predicted to solve half the tasks. Higher horizon = model handles harder optimizations. Infinite/very large horizon means the model never drops below 50% (or is always below)."
   }
 }
