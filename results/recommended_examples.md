@@ -1,25 +1,34 @@
 # GSO Benchmark: Recommended Unsaturated Examples
 
-12 tasks where all top-8 models fail to match the expert optimization. Filtered by: target speedup > 1.5x, best HM patch/commit < 0.85, and at least 3 models passing tests.
+12 tasks where all top-8 models fail to match the expert's optimization. Selected from the 102-instance [GSO benchmark](https://huggingface.co/datasets/gso-bench/gso) using: expert speedup > 1.5x, best model closeness < 0.85, and at least 3 models producing correct patches.
+
+### How GSO scoring works
+
+Each task has an **expert commit** (the ground-truth optimization) and a **base** (the unoptimized code). A model's patch is evaluated on two axes:
+
+- **Speedup** (geometric mean): How much faster is the model's patch vs the unoptimized base? Higher is better.
+- **Closeness** (harmonic mean of patch time / expert commit time): How close is the model's patch to the expert's speed? A value of 1.0 means the model matches the expert exactly; < 1.0 means slower than the expert; values below 0.95 count as unsolved.
+
+A model "solves" a task only if its patch is both (a) at least 1.2x faster than base and (b) within 5% of the expert's speed (closeness >= 0.95).
 
 ## Summary Table
 
-| Instance | API | Target | Best Model | Best Speedup | P/C | Pass/Opt | Gap Type |
+| Instance | API | Expert Speedup | Best Model | Model Speedup | Closeness | Correct / Faster | Gap Type |
 |---|---|---|---|---|---|---|---|
-| pandas-fd43d4b | RangeIndex.take | 8.33x | gpt-5.2 | 6.48x | 0.73 | 3/3 | cross_module_tracing |
-| numpy-ba89ef9 | numpy.add.at | 5.39x | claude-opus-4.6 | 4.31x | 0.78 | 5/5 | cross_module_tracing |
-| numpy-19bfa3f | np.char.add | 5.23x | gemini-3-flash | 1.77x | 0.32 | 2/1 | compiled_code_barrier |
-| numpy-22ab9aa | np.char.rfind | 3.78x | gpt-5.1 | 1.63x | 0.41 | 4/3 | compiled_code_barrier |
-| numpy-83c780d | np.char.find | 3.26x | claude-sonnet-4.5 | 3.49x | 0.79 | 6/5 | compiled_code_barrier, algorithm_porting |
-| numpy-cb0d7cd | numpy.strings.ljust | 3.18x | gpt-5.2 | 1.74x | 0.51 | 4/3 | compiled_code_barrier, kernel_fusion |
-| pandas-bfaf917 | maybe_sequence_to_range | 2.67x | claude-opus-4.5 | 2.14x | 0.71 | 7/5 | compiled_code_barrier |
-| pandas-2cdca01 | Period.strftime | 2.47x | gpt-5.1 | 1.39x | 0.54 | 8/7 | compiled_code_barrier |
-| tornado-4d4c1e0 | Future.set_exception | 2.40x | claude-opus-4.6 | 1.57x | 0.55 | 8/3 | architectural_substitution |
-| pydantic-addf1f9 | BaseModel.__setattr__ | 2.33x | gpt-5.2 | 1.81x | 0.76 | 6/4 | memoization_pattern |
-| tornado-ac13ee5 | Future.done | 2.06x | gemini-3-pro | 1.49x | 0.70 | 7/4 | architectural_substitution |
-| pydantic-ac9e6ee | TypeAdapter.validate_python | 1.80x | gpt-5.2 | 1.61x | 0.85 | 6/5 | compiled_code_barrier |
+| pandas-fd43d4b | RangeIndex.take | 8.33x | gpt-5.2 | 6.48x | 0.73 | 3 / 3 | cross_module_tracing |
+| numpy-ba89ef9 | numpy.add.at | 5.39x | claude-opus-4.6 | 4.31x | 0.78 | 5 / 5 | cross_module_tracing |
+| numpy-19bfa3f | np.char.add | 5.23x | gemini-3-flash | 1.77x | 0.32 | 2 / 1 | compiled_code_barrier |
+| numpy-22ab9aa | np.char.rfind | 3.78x | gpt-5.1 | 1.63x | 0.41 | 4 / 3 | compiled_code_barrier |
+| numpy-83c780d | np.char.find | 3.26x | claude-sonnet-4.5 | 3.49x | 0.79 | 6 / 5 | compiled_code_barrier, algorithm_porting |
+| numpy-cb0d7cd | numpy.strings.ljust | 3.18x | gpt-5.2 | 1.74x | 0.51 | 4 / 3 | compiled_code_barrier, kernel_fusion |
+| pandas-bfaf917 | maybe_sequence_to_range | 2.67x | claude-opus-4.5 | 2.14x | 0.71 | 7 / 5 | compiled_code_barrier |
+| pandas-2cdca01 | Period.strftime | 2.47x | gpt-5.1 | 1.39x | 0.54 | 8 / 7 | compiled_code_barrier |
+| tornado-4d4c1e0 | Future.set_exception | 2.40x | claude-opus-4.6 | 1.57x | 0.55 | 8 / 3 | architectural_substitution |
+| pydantic-addf1f9 | BaseModel.__setattr__ | 2.33x | gpt-5.2 | 1.81x | 0.76 | 6 / 4 | memoization_pattern |
+| tornado-ac13ee5 | Future.done | 2.06x | gemini-3-pro | 1.49x | 0.70 | 7 / 4 | architectural_substitution |
+| pydantic-ac9e6ee | TypeAdapter.validate_python | 1.80x | gpt-5.2 | 1.61x | 0.85 | 6 / 5 | compiled_code_barrier |
 
-**Columns**: Target = expert speedup over base, Best Speedup = best model's GM speedup, P/C = HM(patch/commit), Pass/Opt = models passing tests / models achieving opt_base.
+**Correct / Faster** = models passing correctness tests / models that also produce a speedup >= 1.2x (but still fail to match the expert).
 
 ## Capability Gap Taxonomy
 
