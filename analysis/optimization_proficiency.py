@@ -39,31 +39,84 @@ from datasets import load_dataset
 ds = load_dataset("gso-bench/gso", split="test")
 hf_data = {row["instance_id"]: row for row in ds}
 
-MODELS = [
-    "claude-opus-4.6", "gpt-5.2", "claude-opus-4.5", "gemini-3-pro",
-    "claude-sonnet-4.5", "gpt-5.1", "gemini-3-flash", "o3",
-]
+# ---------------------------------------------------------------------------
+# Load ALL models from report files + cached results
+# ---------------------------------------------------------------------------
+REPORT_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "results", "reports")
+
+def load_model_results(model_name):
+    """Load per-instance results from report JSON."""
+    report_path = os.path.join(REPORT_DIR, f"{model_name}.json")
+    if not os.path.exists(report_path):
+        return {}
+    with open(report_path) as f:
+        report = json.load(f)
+    opt_stats = report.get("opt_stats", {})
+    passed_ids = set(report.get("instance_sets", {}).get("passed_ids", []))
+    opt_commit_ids = set(report.get("instance_sets", {}).get("opt_commit_ids", []))
+    results = {}
+    for inst_id, stats in opt_stats.items():
+        results[inst_id] = {
+            "test_passed": inst_id in passed_ids,
+            "opt_commit": inst_id in opt_commit_ids,
+            "gm_speedup_patch_base": stats.get("gm_speedup_patch_base"),
+            "gm_speedup_commit_base": stats.get("gm_speedup_commit_base"),
+        }
+    return results
+
+# All models from report files
+ALL_MODEL_NAMES = sorted([
+    f.replace(".json", "") for f in os.listdir(REPORT_DIR)
+    if f.endswith(".json")
+])
+
+# Load all results (use cached all_results.json where available, fall back to reports)
+all_results = {}
+cached_path = "/tmp/logistic/all_results.json"
+if os.path.exists(cached_path):
+    with open(cached_path) as f:
+        all_results = json.load(f)
+
+for model_name in ALL_MODEL_NAMES:
+    if model_name not in all_results:
+        all_results[model_name] = load_model_results(model_name)
+
+MODELS = ALL_MODEL_NAMES
 
 MODEL_LABELS = {
     "claude-opus-4.6": "Claude Opus 4.6",
-    "gpt-5.2": "GPT-5.2",
     "claude-opus-4.5": "Claude Opus 4.5",
-    "gemini-3-pro": "Gemini 3 Pro",
+    "claude-opus-4": "Claude Opus 4",
     "claude-sonnet-4.5": "Claude Sonnet 4.5",
+    "claude-sonnet-4": "Claude Sonnet 4",
+    "gpt-5.2": "GPT-5.2",
     "gpt-5.1": "GPT-5.1",
+    "gpt-5": "GPT-5",
+    "gemini-3-pro": "Gemini 3 Pro",
     "gemini-3-flash": "Gemini 3 Flash",
+    "gemini-2.5-pro": "Gemini 2.5 Pro",
     "o3": "o3",
+    "qwen3-coder": "Qwen3-Coder",
+    "kimi-k2": "Kimi K2",
+    "glm-4.5": "GLM-4.5",
 }
 
 MODEL_COLORS = {
-    "claude-opus-4.6": "#D97706",
-    "gpt-5.2": "#059669",
-    "claude-opus-4.5": "#E07A3A",
-    "gemini-3-pro": "#4285F4",
-    "claude-sonnet-4.5": "#F59E0B",
-    "gpt-5.1": "#10B981",
-    "gemini-3-flash": "#7AAFFF",
+    "claude-opus-4.6": "#B45309",
+    "claude-opus-4.5": "#D97706",
+    "claude-opus-4": "#F59E0B",
+    "claude-sonnet-4.5": "#FBBF24",
+    "claude-sonnet-4": "#FCD34D",
+    "gpt-5.2": "#047857",
+    "gpt-5.1": "#059669",
+    "gpt-5": "#10B981",
+    "gemini-3-pro": "#2563EB",
+    "gemini-3-flash": "#60A5FA",
+    "gemini-2.5-pro": "#93C5FD",
     "o3": "#6366F1",
+    "qwen3-coder": "#DC2626",
+    "kimi-k2": "#9333EA",
+    "glm-4.5": "#64748B",
 }
 
 # ---------------------------------------------------------------------------
@@ -396,98 +449,131 @@ for model in MODELS:
 MODEL_RELEASE_DATES = {
     "claude-opus-4.6": "2026-02-05",
     "claude-opus-4.5": "2025-11-24",
+    "claude-opus-4": "2025-05-22",
     "claude-sonnet-4.5": "2025-09-29",
+    "claude-sonnet-4": "2025-05-22",
     "gpt-5.2": "2025-12-11",
     "gpt-5.1": "2025-11-19",
+    "gpt-5": "2025-08-07",
     "gemini-3-pro": "2025-11-18",
     "gemini-3-flash": "2025-12-17",
+    "gemini-2.5-pro": "2025-06-17",
     "o3": "2025-04-16",
+    "qwen3-coder": "2025-07-22",
+    "kimi-k2": "2025-07-11",
+    "glm-4.5": "2025-07-28",
 }
 
 # ---------------------------------------------------------------------------
-# Figure 4: OPL horizon over time (METR-style)
+# Figures 4a & 4b: OPL horizon over time — separate p50 and p80 plots
 # ---------------------------------------------------------------------------
 import datetime
 import matplotlib.dates as mdates
 from matplotlib.lines import Line2D
-from adjustText import adjust_text  # pip install adjustText
+from adjustText import adjust_text
 
-fig4, (ax_lin, ax_log) = plt.subplots(1, 2, figsize=(14, 6))
+MIN_N_FOR_PLOT = 20  # need enough data for a meaningful logistic fit
 
 plot_data = []
 for model in MODELS:
+    if model not in fit_results or model not in MODEL_RELEASE_DATES:
+        continue
     fr = fit_results[model]
+    if fr["n"] < MIN_N_FOR_PLOT:
+        print(f"  Skipping {MODEL_LABELS.get(model, model)} for temporal plot (n={fr['n']} < {MIN_N_FOR_PLOT})")
+        continue
     dt = datetime.datetime.strptime(MODEL_RELEASE_DATES[model], "%Y-%m-%d")
     plot_data.append({
-        "model": model, "date": dt, "label": MODEL_LABELS[model],
+        "model": model, "date": dt, "label": MODEL_LABELS.get(model, model),
         "p50": fr["level_50"], "p80": fr["level_80"],
         "ci_lo": fr.get("ci_lo"), "ci_hi": fr.get("ci_hi"),
-        "color": MODEL_COLORS[model],
+        "color": MODEL_COLORS.get(model, "#888888"),
     })
 
-for ax, title_suffix, is_log in [(ax_lin, "(linear scale)", False),
-                                  (ax_log, "(log scale)", True)]:
-    texts = []
-    for d in plot_data:
-        yerr_lo = d["p50"] - d["ci_lo"] if d["ci_lo"] else 0
-        yerr_hi = d["ci_hi"] - d["p50"] if d["ci_hi"] else 0
-        # p50 (filled) with CI
-        ax.errorbar(d["date"], d["p50"], yerr=[[yerr_lo], [yerr_hi]],
-                    fmt='o', color=d["color"], markersize=9,
-                    markeredgecolor='white', markeredgewidth=1.5,
-                    capsize=4, capthick=1.5, elinewidth=1.5, zorder=5)
-        # p80 (hollow)
-        ax.scatter(d["date"], d["p80"], s=50, facecolors='none',
-                   edgecolors=d["color"], linewidths=1.5, zorder=4, alpha=0.7)
-        # Label (will be adjusted)
-        texts.append(ax.text(d["date"], d["p50"], d["label"],
-                             fontsize=7, color=d["color"], fontweight='bold'))
+# Convert dates to ordinal for trend fitting
+date_ordinals = np.array([d["date"].toordinal() for d in plot_data])
 
-    # Expert level reference
-    ax.axhline(y=1.0, color="red", linestyle="--", alpha=0.4, linewidth=1.5)
-    ax.text(plot_data[0]["date"], 1.01, "expert level",
-            color="red", fontsize=8, alpha=0.6, va="bottom")
+for metric, metric_label, filename in [
+    ("p50", "p50 OPL", "opl_over_time_p50.png"),
+    ("p80", "p80 OPL", "opl_over_time_p80.png"),
+]:
+    fig, (ax_lin, ax_log) = plt.subplots(1, 2, figsize=(14, 6))
+    vals = np.array([d[metric] for d in plot_data])
 
-    if is_log:
-        ax.set_yscale("log", base=2)
-        yticks = [0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-        ax.set_yticks(yticks)
-        ax.set_yticklabels([f"{v:.0%}" for v in yticks])
-        ax.set_ylim(0.2, 1.15)
-    else:
-        ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
-        ax.set_ylim(0.15, 1.1)
+    for ax, title_suffix, is_log in [(ax_lin, "(linear scale)", False),
+                                      (ax_log, "(log scale)", True)]:
+        texts = []
+        for d in plot_data:
+            # CI error bars (light gray)
+            if metric == "p50" and d["ci_lo"] and d["ci_hi"]:
+                yerr_lo = d["p50"] - d["ci_lo"]
+                yerr_hi = d["ci_hi"] - d["p50"]
+                ax.errorbar(d["date"], d[metric], yerr=[[yerr_lo], [yerr_hi]],
+                            fmt='none', ecolor='lightgray', capsize=3,
+                            capthick=1, elinewidth=1.5, zorder=2)
 
-    ax.set_xlabel("Model Release Date", fontsize=11)
-    ax.set_ylabel("Optimization Level (model / expert speedup)", fontsize=11)
-    ax.set_title(f"OPL Horizon Over Time {title_suffix}", fontsize=12)
-    ax.grid(True, alpha=0.2)
+            # Point
+            ax.scatter(d["date"], d[metric], s=80, color=d["color"],
+                       edgecolors='white', linewidths=1.2, zorder=5)
 
-    legend_elements = [
-        Line2D([0], [0], marker='o', color='gray', markersize=8,
-               markeredgecolor='white', markeredgewidth=1.5, linestyle='None',
-               label='p50 OPL (with 95% CI)'),
-        Line2D([0], [0], marker='o', color='gray', markersize=7,
-               markerfacecolor='none', markeredgewidth=1.5, linestyle='None',
-               label='p80 OPL'),
-    ]
-    ax.legend(handles=legend_elements, fontsize=8, loc='lower right', framealpha=0.9)
+            # Label
+            texts.append(ax.text(d["date"], d[metric], d["label"],
+                                 fontsize=6.5, color=d["color"], fontweight='bold'))
 
-    ax.tick_params(axis='x', rotation=30)
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+        # Trend line (linear fit on log values vs time)
+        valid = vals > 0
+        if valid.sum() >= 3:
+            log_vals = np.log(vals[valid])
+            ords = date_ordinals[valid]
+            coeffs = np.polyfit(ords, log_vals, 1)
+            trend_dates = np.linspace(ords.min() - 30, ords.max() + 30, 200)
+            trend_vals = np.exp(np.polyval(coeffs, trend_dates))
+            trend_dt = [datetime.datetime.fromordinal(int(o)) for o in trend_dates]
+            ax.plot(trend_dt, trend_vals, color='gray', linestyle='--',
+                    linewidth=1.5, alpha=0.5, zorder=1)
 
-    # Adjust text to avoid overlaps
-    try:
-        adjust_text(texts, ax=ax, arrowprops=dict(arrowstyle='-', color='gray',
-                    alpha=0.4, lw=0.5), force_text=(0.3, 0.3))
-    except Exception:
-        pass  # fallback: labels stay where they are
+        # Expert level reference
+        ax.axhline(y=1.0, color="red", linestyle="--", alpha=0.3, linewidth=1.5)
+        ax.text(plot_data[0]["date"], 1.01, "expert level",
+                color="red", fontsize=8, alpha=0.5, va="bottom")
 
-fig4.suptitle("Optimization Proficiency Level Over Time",
-              fontsize=13, fontweight="bold")
-plt.tight_layout()
-plt.savefig(os.path.join(OUT_DIR, "opl_over_time.png"), dpi=150, bbox_inches="tight")
-print(f"Saved: opl_over_time.png")
+        if is_log:
+            ax.set_yscale("log", base=2)
+            if metric == "p50":
+                yticks = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+            else:
+                yticks = [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0]
+            ax.set_yticks(yticks)
+            ax.set_yticklabels([f"{v:.0%}" for v in yticks])
+            if metric == "p50":
+                ax.set_ylim(0.35, 1.15)
+            else:
+                ax.set_ylim(0.08, 1.15)
+        else:
+            ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
+            if metric == "p50":
+                ax.set_ylim(0.3, 1.1)
+            else:
+                ax.set_ylim(0.0, 1.1)
+
+        ax.set_xlabel("Model Release Date", fontsize=11)
+        ax.set_ylabel("Optimization Level (model / expert speedup)", fontsize=11)
+        ax.set_title(f"{metric_label} Over Time {title_suffix}", fontsize=12)
+        ax.grid(True, alpha=0.2)
+        ax.tick_params(axis='x', rotation=30)
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+
+        try:
+            adjust_text(texts, ax=ax, arrowprops=dict(arrowstyle='-', color='gray',
+                        alpha=0.3, lw=0.5), force_text=(0.3, 0.3))
+        except Exception:
+            pass
+
+    fig.suptitle(f"Optimization Proficiency Level — {metric_label}",
+                 fontsize=13, fontweight="bold")
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUT_DIR, filename), dpi=150, bbox_inches="tight")
+    print(f"Saved: {filename}")
 
 # ---------------------------------------------------------------------------
 # Summary JSON
@@ -508,10 +594,12 @@ summary = {
 }
 
 for model in sorted_models:
+    if model not in fit_results:
+        continue
     fr = fit_results[model]
     summary["models"][model] = {
-        "label": MODEL_LABELS[model],
-        "release_date": MODEL_RELEASE_DATES[model],
+        "label": MODEL_LABELS.get(model, model),
+        "release_date": MODEL_RELEASE_DATES.get(model, "unknown"),
         "n_instances": fr["n"],
         "p50_opl": round(fr["level_50"], 4),
         "p80_opl": round(fr["level_80"], 4),

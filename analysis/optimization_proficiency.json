@@ -2,108 +2,175 @@
   "description": "Optimization Proficiency Level (OPL): at 50% success rate, what optimization level (model_speedup / expert_speedup) can the model achieve? Analogous to METR's p50 time-horizon.",
   "methodology": "optimization_level = model_speedup / expert_speedup. Fit logistic: P(level >= t) = sigma(alpha + beta * t). p50 OPL = -alpha/beta. p80 OPL = -(alpha - ln4)/beta. CIs via hierarchical bootstrap.",
   "models": {
+    "gpt-5": {
+      "label": "GPT-5",
+      "release_date": "2025-08-07",
+      "n_instances": 7,
+      "p50_opl": 1.4323,
+      "p80_opl": 1.2786,
+      "logistic_alpha": 12.919,
+      "logistic_beta": -9.02,
+      "p50_opl_95ci": [
+        1.4356,
+        1.716
+      ]
+    },
+    "glm-4.5": {
+      "label": "GLM-4.5",
+      "release_date": "2025-07-28",
+      "n_instances": 3,
+      "p50_opl": 1.429,
+      "p80_opl": 1.1435,
+      "logistic_alpha": 6.9378,
+      "logistic_beta": -4.8548
+    },
+    "claude-sonnet-4": {
+      "label": "Claude Sonnet 4",
+      "release_date": "2025-05-22",
+      "n_instances": 4,
+      "p50_opl": 1.374,
+      "p80_opl": 1.252,
+      "logistic_alpha": 15.6132,
+      "logistic_beta": -11.3633
+    },
+    "gemini-2.5-pro": {
+      "label": "Gemini 2.5 Pro",
+      "release_date": "2025-06-17",
+      "n_instances": 4,
+      "p50_opl": 1.3705,
+      "p80_opl": 1.2922,
+      "logistic_alpha": 24.2615,
+      "logistic_beta": -17.7025
+    },
+    "kimi-k2": {
+      "label": "Kimi K2",
+      "release_date": "2025-07-11",
+      "n_instances": 5,
+      "p50_opl": 1.3536,
+      "p80_opl": 1.0503,
+      "logistic_alpha": 6.1872,
+      "logistic_beta": -4.5708
+    },
+    "claude-opus-4": {
+      "label": "Claude Opus 4",
+      "release_date": "2025-05-22",
+      "n_instances": 7,
+      "p50_opl": 1.3221,
+      "p80_opl": 1.1467,
+      "logistic_alpha": 10.4507,
+      "logistic_beta": -7.9045
+    },
+    "qwen3-coder": {
+      "label": "Qwen3-Coder",
+      "release_date": "2025-07-22",
+      "n_instances": 5,
+      "p50_opl": 1.0661,
+      "p80_opl": 0.9375,
+      "logistic_alpha": 11.488,
+      "logistic_beta": -10.7757
+    },
     "claude-opus-4.6": {
       "label": "Claude Opus 4.6",
       "release_date": "2026-02-05",
       "n_instances": 84,
-      "p50_opl": 0.9358,
-      "p80_opl": 0.6844,
-      "logistic_alpha": 5.1598,
-      "logistic_beta": -5.5138,
+      "p50_opl": 0.9527,
+      "p80_opl": 0.7022,
+      "logistic_alpha": 5.2718,
+      "logistic_beta": -5.5335,
       "p50_opl_95ci": [
-        0.852,
-        1.0567
+        0.8686,
+        1.1022
       ]
     },
     "claude-opus-4.5": {
       "label": "Claude Opus 4.5",
       "release_date": "2025-11-24",
       "n_instances": 78,
-      "p50_opl": 0.8941,
-      "p80_opl": 0.6427,
-      "logistic_alpha": 4.9303,
-      "logistic_beta": -5.5144,
+      "p50_opl": 0.9023,
+      "p80_opl": 0.6655,
+      "logistic_alpha": 5.2835,
+      "logistic_beta": -5.8557,
       "p50_opl_95ci": [
-        0.7693,
-        1.0161
+        0.7911,
+        1.0236
       ]
     },
     "gpt-5.2": {
       "label": "GPT-5.2",
       "release_date": "2025-12-11",
       "n_instances": 80,
-      "p50_opl": 0.8477,
-      "p80_opl": 0.5014,
-      "logistic_alpha": 3.3932,
-      "logistic_beta": -4.0026,
+      "p50_opl": 0.8576,
+      "p80_opl": 0.5127,
+      "logistic_alpha": 3.4466,
+      "logistic_beta": -4.0189,
       "p50_opl_95ci": [
-        0.69,
-        0.98
+        0.7129,
+        1.0022
       ]
     },
     "gemini-3-pro": {
       "label": "Gemini 3 Pro",
       "release_date": "2025-11-18",
       "n_instances": 79,
-      "p50_opl": 0.8196,
-      "p80_opl": 0.5762,
-      "logistic_alpha": 4.6685,
-      "logistic_beta": -5.6964,
+      "p50_opl": 0.8279,
+      "p80_opl": 0.5907,
+      "logistic_alpha": 4.8384,
+      "logistic_beta": -5.8443,
       "p50_opl_95ci": [
-        0.738,
-        0.9116
+        0.7488,
+        0.9466
       ]
     },
     "claude-sonnet-4.5": {
       "label": "Claude Sonnet 4.5",
       "release_date": "2025-09-29",
       "n_instances": 78,
-      "p50_opl": 0.8044,
-      "p80_opl": 0.4728,
-      "logistic_alpha": 3.3636,
-      "logistic_beta": -4.1816,
+      "p50_opl": 0.8074,
+      "p80_opl": 0.486,
+      "logistic_alpha": 3.4824,
+      "logistic_beta": -4.3129,
       "p50_opl_95ci": [
-        0.6966,
-        0.9869
+        0.6984,
+        0.9772
       ]
     },
     "gpt-5.1": {
       "label": "GPT-5.1",
       "release_date": "2025-11-19",
       "n_instances": 77,
-      "p50_opl": 0.6751,
-      "p80_opl": 0.3766,
-      "logistic_alpha": 3.1352,
-      "logistic_beta": -4.6441,
+      "p50_opl": 0.6832,
+      "p80_opl": 0.3919,
+      "logistic_alpha": 3.2518,
+      "logistic_beta": -4.7599,
       "p50_opl_95ci": [
-        0.5606,
-        0.8411
+        0.5492,
+        0.8599
       ]
     },
     "o3": {
       "label": "o3",
       "release_date": "2025-04-16",
       "n_instances": 47,
-      "p50_opl": 0.6348,
-      "p80_opl": 0.2746,
-      "logistic_alpha": 2.4429,
-      "logistic_beta": -3.8483,
+      "p50_opl": 0.6533,
+      "p80_opl": 0.283,
+      "logistic_alpha": 2.4459,
+      "logistic_beta": -3.7441,
       "p50_opl_95ci": [
-        0.4771,
-        0.9105
+        0.4919,
+        0.9472
       ]
     },
     "gemini-3-flash": {
       "label": "Gemini 3 Flash",
       "release_date": "2025-12-17",
       "n_instances": 71,
-      "p50_opl": 0.5863,
-      "p80_opl": 0.2537,
-      "logistic_alpha": 2.4433,
-      "logistic_beta": -4.1671,
+      "p50_opl": 0.5906,
+      "p80_opl": 0.2822,
+      "logistic_alpha": 2.655,
+      "logistic_beta": -4.4957,
       "p50_opl_95ci": [
-        0.4838,
-        0.8692
+        0.4783,
+        0.8899
       ]
     }
   }
