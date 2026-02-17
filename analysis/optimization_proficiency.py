@@ -17,12 +17,15 @@ optimization capability scaling (distinct from general coding ability).
 import json
 import os
 import warnings
+import datetime
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+import matplotlib.dates as mdates
+from adjustText import adjust_text
 
 warnings.filterwarnings("ignore")
 
@@ -32,9 +35,6 @@ OUT_DIR = SCRIPT_DIR
 # ---------------------------------------------------------------------------
 # Data loading
 # ---------------------------------------------------------------------------
-with open("/tmp/logistic/all_results.json") as f:
-    all_results = json.load(f)
-
 from datasets import load_dataset
 ds = load_dataset("gso-bench/gso", split="test")
 hf_data = {row["instance_id"]: row for row in ds}
@@ -43,6 +43,7 @@ hf_data = {row["instance_id"]: row for row in ds}
 # Load ALL models from report files + cached results
 # ---------------------------------------------------------------------------
 REPORT_DIR = os.path.join(os.path.dirname(SCRIPT_DIR), "results", "reports")
+
 
 def load_model_results(model_name):
     """Load per-instance results from report JSON."""
@@ -63,6 +64,7 @@ def load_model_results(model_name):
             "gm_speedup_commit_base": stats.get("gm_speedup_commit_base"),
         }
     return results
+
 
 # All models from report files
 ALL_MODEL_NAMES = sorted([
@@ -119,6 +121,28 @@ MODEL_COLORS = {
     "glm-4.5": "#64748B",
 }
 
+# Model release dates
+MODEL_RELEASE_DATES = {
+    "claude-opus-4.6": "2026-02-05",
+    "claude-opus-4.5": "2025-11-24",
+    "claude-opus-4": "2025-05-22",
+    "claude-sonnet-4.5": "2025-09-29",
+    "claude-sonnet-4": "2025-05-22",
+    "gpt-5.2": "2025-12-11",
+    "gpt-5.1": "2025-11-19",
+    "gpt-5": "2025-08-07",
+    "gemini-3-pro": "2025-11-18",
+    "gemini-3-flash": "2025-12-17",
+    "gemini-2.5-pro": "2025-06-17",
+    "o3": "2025-04-16",
+    "qwen3-coder": "2025-07-22",
+    "kimi-k2": "2025-07-11",
+    "glm-4.5": "2025-07-28",
+}
+
+# Minimum instances with test-passing results for meaningful logistic fit
+MIN_N = 20
+
 # ---------------------------------------------------------------------------
 # Expert speedup per instance
 # ---------------------------------------------------------------------------
@@ -131,46 +155,12 @@ for model in MODELS:
                 instance_expert_speedup[inst_id] = t
 
 # ---------------------------------------------------------------------------
-# Instance metadata (for technique categorization)
+# Instance metadata (repo info for hierarchical bootstrap)
 # ---------------------------------------------------------------------------
-compiled_ext = {'.c', '.cpp', '.cxx', '.h', '.hpp', '.pyx', '.pxd', '.rs', '.go', '.src'}
 instance_meta = {}
 for row in ds:
     inst_id = row["instance_id"]
-    msg = (row.get("gt_commit_message", "") or "").lower()
-    diff = row["gt_diff"]
-    diff_lines = max(1, sum(1 for l in diff.split('\n') if l.startswith('+') or l.startswith('-')))
-    exts = set()
-    for l in diff.split('\n'):
-        if l.startswith('diff --git'):
-            parts = l.split()
-            if len(parts) >= 3:
-                fname = parts[2].lstrip('a/')
-                if '.' in fname:
-                    exts.add('.' + fname.rsplit('.', 1)[-1])
-    has_compiled = bool(exts & compiled_ext)
-
-    if 'simd' in msg or 'sse' in msg or 'avx' in msg or 'vectorize' in msg or 'svml' in msg:
-        technique = 'SIMD/vectorization'
-    elif 'ufunc' in msg or 'indexed loop' in msg or 'fast iter' in msg:
-        technique = 'ufunc/C-loop'
-    elif '.pyx' in str(exts):
-        technique = 'Cython'
-    elif '.rs' in exts:
-        technique = 'Rust rewrite'
-    elif has_compiled and '.pyx' not in str(exts):
-        technique = 'C/C++ optimization'
-    elif 'cache' in msg or 'lazy' in msg or 'avoid' in msg or 'skip' in msg:
-        technique = 'caching/avoidance'
-    else:
-        technique = 'Python-level'
-
-    instance_meta[inst_id] = {
-        "diff_lines": diff_lines,
-        "compiled": has_compiled,
-        "technique": technique,
-        "repo": inst_id.split("__")[0],
-    }
+    instance_meta[inst_id] = {"repo": inst_id.split("__")[0]}
 
 # ---------------------------------------------------------------------------
 # Compute optimization level (= model_speedup / expert_speedup) per model
@@ -204,15 +194,16 @@ def fit_opl(ratios, thresholds=np.arange(0.05, 1.5, 0.05)):
     clf.fit(X, y)
     alpha, beta = clf.intercept_[0], clf.coef_[0, 0]
     level_50 = -alpha / beta if beta != 0 else float("inf")
-    return alpha, beta, level_50
+    level_80 = -(alpha - np.log(4)) / beta if beta != 0 else float("inf")
+    return alpha, beta, level_50, level_80
 
 
 def bootstrap_opl(ratios, repos_list, n_boot=2000, seed=42):
-    """Hierarchical bootstrap for 50% optimization level CI."""
+    """Hierarchical bootstrap for p50 and p80 OPL CIs."""
     rng = np.random.RandomState(seed)
     repo_arr = np.array(repos_list)
     unique_repos = list(set(repos_list))
-    levels = []
+    p50_levels, p80_levels = [], []
     for _ in range(n_boot):
         boot_repos = rng.choice(unique_repos, size=len(unique_repos), replace=True)
         boot_idx = []
@@ -223,14 +214,20 @@ def bootstrap_opl(ratios, repos_list, n_boot=2000, seed=42):
         if len(boot_ratios) < 10:
             continue
         try:
-            _, beta, level = fit_opl(boot_ratios)
-            if beta < 0 and 0.1 <= level <= 2.0:
-                levels.append(level)
+            _, beta, lv50, lv80 = fit_opl(boot_ratios)
+            if beta < 0:
+                if 0.1 <= lv50 <= 2.0:
+                    p50_levels.append(lv50)
+                if 0.01 <= lv80 <= 2.0:
+                    p80_levels.append(lv80)
         except Exception:
             continue
-    if len(levels) < 100:
-        return None, None
-    return np.percentile(levels, 2.5), np.percentile(levels, 97.5)
+
+    p50_ci = (np.percentile(p50_levels, 2.5), np.percentile(p50_levels, 97.5)) \
+        if len(p50_levels) >= 100 else (None, None)
+    p80_ci = (np.percentile(p80_levels, 2.5), np.percentile(p80_levels, 97.5)) \
+        if len(p80_levels) >= 100 else (None, None)
+    return p50_ci, p80_ci
 
 
 print("=" * 70)
@@ -239,40 +236,52 @@ print("=" * 70)
 print()
 
 fit_results = {}
-print(f"{'Model':20s} {'n':>4s} {'alpha':>7s} {'beta':>7s} {'50% OPL':>10s} {'95% CI':>20s}")
-print("-" * 65)
+print(f"{'Model':20s} {'n':>4s} {'alpha':>7s} {'beta':>7s} {'p50 OPL':>10s} {'p80 OPL':>10s} {'p50 95% CI':>20s} {'p80 95% CI':>20s}")
+print("-" * 95)
 
 for model in MODELS:
     ratios = model_ratios[model]
     repos = [instance_meta.get(iid, {}).get("repo", "?") for iid, _ in ratios]
-    alpha, beta, level_50 = fit_opl(ratios)
-    ci_lo, ci_hi = bootstrap_opl(ratios, repos)
+    alpha, beta, level_50, level_80 = fit_opl(ratios)
+    p50_ci, p80_ci = bootstrap_opl(ratios, repos)
     fit_results[model] = {
-        "alpha": alpha, "beta": beta, "level_50": level_50,
-        "ci_lo": ci_lo, "ci_hi": ci_hi,
+        "alpha": alpha, "beta": beta,
+        "level_50": level_50, "level_80": level_80,
+        "p50_ci_lo": p50_ci[0], "p50_ci_hi": p50_ci[1],
+        "p80_ci_lo": p80_ci[0], "p80_ci_hi": p80_ci[1],
         "n": len(ratios),
     }
-    ci_str = f"[{ci_lo:.3f}, {ci_hi:.3f}]" if ci_lo else "N/A"
-    print(f"{MODEL_LABELS[model]:20s} {len(ratios):4d} {alpha:7.3f} {beta:7.3f} {level_50:10.1%} {ci_str:>20s}")
+    p50_ci_str = f"[{p50_ci[0]:.3f}, {p50_ci[1]:.3f}]" if p50_ci[0] else "N/A"
+    p80_ci_str = f"[{p80_ci[0]:.3f}, {p80_ci[1]:.3f}]" if p80_ci[0] else "N/A"
+    label = MODEL_LABELS.get(model, model)
+    print(f"{label:20s} {len(ratios):4d} {alpha:7.3f} {beta:7.3f} {level_50:10.1%} {level_80:10.1%} {p50_ci_str:>20s} {p80_ci_str:>20s}")
+
+# Models with enough data for reliable plots
+plotable_models = [m for m in MODELS if fit_results[m]["n"] >= MIN_N]
+sorted_models = sorted(plotable_models, key=lambda m: -fit_results[m]["level_50"])
+
+print(f"\nModels with n >= {MIN_N} for plots: {len(sorted_models)}")
+for m in MODELS:
+    if fit_results[m]["n"] < MIN_N:
+        print(f"  Skipping {MODEL_LABELS.get(m, m)} (n={fit_results[m]['n']})")
 
 # ---------------------------------------------------------------------------
-# Figure 1: Optimization Proficiency Curves
+# Figure 1: Optimization Proficiency Curves (only models with enough data)
 # ---------------------------------------------------------------------------
 fig, ax = plt.subplots(figsize=(11, 6.5))
 
 thresholds = np.linspace(0.0, 1.3, 200)
-sorted_models = sorted(MODELS, key=lambda m: -fit_results[m]["level_50"])
 
 for model in sorted_models:
     fr = fit_results[model]
-    color = MODEL_COLORS[model]
-    label = MODEL_LABELS[model]
+    color = MODEL_COLORS.get(model, "#888888")
+    label = MODEL_LABELS.get(model, model)
 
     # Fitted sigmoid
     p_curve = 1.0 / (1.0 + np.exp(-(fr["alpha"] + fr["beta"] * thresholds)))
     ci_str = ""
-    if fr["ci_lo"]:
-        ci_str = f" [{fr['ci_lo']:.0%}, {fr['ci_hi']:.0%}]"
+    if fr["p50_ci_lo"]:
+        ci_str = f" [{fr['p50_ci_lo']:.0%}, {fr['p50_ci_hi']:.0%}]"
     ax.plot(thresholds, p_curve, color=color, linewidth=2.5,
             label=f"{label}: {fr['level_50']:.0%}{ci_str}", zorder=2)
 
@@ -298,14 +307,14 @@ ax.text(1.25, 0.52, "50%", color="gray", fontsize=9, ha="right", va="bottom")
 ax.set_xlabel("Optimization Level (model speedup / expert speedup)", fontsize=12)
 ax.set_ylabel("P(achieving this level)", fontsize=12)
 ax.set_title("Optimization Proficiency Level (OPL)\n"
-             "P(model_speedup / expert_speedup ≥ t) = σ(α + β·t)",
+             "P(model_speedup / expert_speedup \u2265 t) = \u03c3(\u03b1 + \u03b2\u00b7t)",
              fontsize=13)
 ax.set_xlim(-0.02, 1.3)
 ax.set_ylim(-0.03, 1.03)
 ax.xaxis.set_major_formatter(ticker.PercentFormatter(1.0))
 ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
 ax.legend(loc="upper right", fontsize=8.5,
-          title="Model: 50% OPL [95% CI]", title_fontsize=9, framealpha=0.9)
+          title="Model: p50 OPL [95% CI]", title_fontsize=9, framealpha=0.9)
 ax.grid(True, alpha=0.2)
 
 plt.tight_layout()
@@ -313,184 +322,22 @@ plt.savefig(os.path.join(OUT_DIR, "optimization_proficiency.png"), dpi=150, bbox
 print(f"\nSaved: optimization_proficiency.png")
 
 # ---------------------------------------------------------------------------
-# Figure 2: Technique breakdown — what types of optimization can models do?
+# Figures 2a & 2b: OPL over time — separate p50 and p80 plots
 # ---------------------------------------------------------------------------
-from collections import Counter
-
-tech_order = ['caching/avoidance', 'Python-level', 'Cython',
-              'ufunc/C-loop', 'C/C++ optimization', 'Rust rewrite', 'SIMD/vectorization']
-
-fig2, axes = plt.subplots(1, 2, figsize=(15, 6))
-
-# Left: solve rate by technique (top 4 models)
-ax = axes[0]
-top_models = sorted(MODELS, key=lambda m: -fit_results[m]["level_50"])[:4]
-bar_width = 0.18
-techniques_with_data = []
-for tech in tech_order:
-    inst_ids = [iid for iid, m in instance_meta.items() if m["technique"] == tech]
-    if len(inst_ids) >= 3:
-        techniques_with_data.append(tech)
-
-x_pos = np.arange(len(techniques_with_data))
-for i, model in enumerate(top_models):
-    rates = []
-    for tech in techniques_with_data:
-        inst_ids = [iid for iid, m in instance_meta.items() if m["technique"] == tech]
-        solved = sum(1 for iid in inst_ids
-                     if (all_results[model].get(iid) or {}).get("opt_commit"))
-        total = sum(1 for iid in inst_ids
-                    if all_results[model].get(iid) is not None and
-                    all_results[model][iid] is not None and
-                    all_results[model][iid].get("test_passed") is not None)
-        rates.append(solved / total if total > 0 else 0)
-    ax.bar(x_pos + i * bar_width, rates, bar_width, color=MODEL_COLORS[model],
-           label=MODEL_LABELS[model], alpha=0.85)
-
-ax.set_xticks(x_pos + bar_width * 1.5)
-ax.set_xticklabels(techniques_with_data, rotation=30, ha="right", fontsize=8.5)
-ax.set_ylabel("Solve Rate", fontsize=11)
-ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
-ax.set_title("Solve Rate by Optimization Technique", fontsize=12)
-ax.legend(fontsize=8, framealpha=0.9)
-ax.grid(True, alpha=0.2, axis="y")
-
-# Right: median optimization level by technique (top 4 models)
-ax = axes[1]
-for i, model in enumerate(top_models):
-    med_ratios = []
-    for tech in techniques_with_data:
-        inst_ids = {iid for iid, m in instance_meta.items() if m["technique"] == tech}
-        tech_ratios = [ratio for iid, ratio in model_ratios[model] if iid in inst_ids]
-        med_ratios.append(np.median(tech_ratios) if tech_ratios else 0)
-    ax.bar(x_pos + i * bar_width, med_ratios, bar_width, color=MODEL_COLORS[model],
-           label=MODEL_LABELS[model], alpha=0.85)
-
-ax.axhline(y=1.0, color="gray", linestyle=":", alpha=0.4, linewidth=1)
-ax.set_xticks(x_pos + bar_width * 1.5)
-ax.set_xticklabels(techniques_with_data, rotation=30, ha="right", fontsize=8.5)
-ax.set_ylabel("Median Optimization Level", fontsize=11)
-ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
-ax.set_title("Median Optimization Level by Technique", fontsize=12)
-ax.legend(fontsize=8, framealpha=0.9)
-ax.grid(True, alpha=0.2, axis="y")
-
-fig2.suptitle("Optimization Capability by Technique Type", fontsize=13, fontweight="bold")
-plt.tight_layout()
-plt.savefig(os.path.join(OUT_DIR, "optimization_by_technique.png"), dpi=150, bbox_inches="tight")
-print(f"Saved: optimization_by_technique.png")
-
-# ---------------------------------------------------------------------------
-# Figure 3: The "partial optimization" story
-# ---------------------------------------------------------------------------
-fig3, (ax_left, ax_right) = plt.subplots(1, 2, figsize=(14, 5.5))
-
-# Left: distribution of optimization levels for top model
-model = "claude-opus-4.6"
-ratios_arr = np.array([r for _, r in model_ratios[model]])
-ax_left.hist(ratios_arr, bins=25, range=(0, 1.5), color=MODEL_COLORS[model],
-             alpha=0.7, edgecolor="white", linewidth=0.5)
-ax_left.axvline(x=1.0, color="red", linestyle="--", linewidth=1.5, alpha=0.7,
-                label="Expert level (100%)")
-ax_left.axvline(x=np.median(ratios_arr), color="black", linestyle="-", linewidth=1.5,
-                label=f"Median: {np.median(ratios_arr):.0%}")
-ax_left.set_xlabel("Optimization Level (model / expert)", fontsize=11)
-ax_left.set_ylabel("Count", fontsize=11)
-ax_left.set_title(f"Distribution of Optimization Levels\n({MODEL_LABELS[model]})", fontsize=12)
-ax_left.xaxis.set_major_formatter(ticker.PercentFormatter(1.0))
-ax_left.legend(fontsize=9)
-ax_left.grid(True, alpha=0.2, axis="y")
-
-# Right: median optimization level by difficulty tier (all models)
-tiers = [(0, 50, '<50'), (50, 150, '50-150'), (150, 500, '150-500'), (500, 10000, '500+')]
-tier_labels = [t[2] for t in tiers]
-x_pos = np.arange(len(tiers))
-bar_width = 0.18
-
-for i, model in enumerate(top_models):
-    med_by_tier = []
-    for lo, hi, _ in tiers:
-        tier_ratios = [ratio for iid, ratio in model_ratios[model]
-                       if instance_meta.get(iid, {}).get("diff_lines", 0) >= lo
-                       and instance_meta.get(iid, {}).get("diff_lines", 0) < hi]
-        med_by_tier.append(np.median(tier_ratios) if tier_ratios else 0)
-    ax_right.bar(x_pos + i * bar_width, med_by_tier, bar_width,
-                 color=MODEL_COLORS[model], label=MODEL_LABELS[model], alpha=0.85)
-
-ax_right.axhline(y=1.0, color="gray", linestyle=":", alpha=0.4, linewidth=1)
-ax_right.set_xticks(x_pos + bar_width * 1.5)
-ax_right.set_xticklabels([f"{l} lines" for l in tier_labels], fontsize=9)
-ax_right.set_xlabel("Expert Diff Size", fontsize=11)
-ax_right.set_ylabel("Median Optimization Level", fontsize=11)
-ax_right.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
-ax_right.set_title("Optimization Level by Task Complexity", fontsize=12)
-ax_right.legend(fontsize=8, framealpha=0.9)
-ax_right.grid(True, alpha=0.2, axis="y")
-
-plt.tight_layout()
-plt.savefig(os.path.join(OUT_DIR, "optimization_partial.png"), dpi=150, bbox_inches="tight")
-print(f"Saved: optimization_partial.png")
-
-# ---------------------------------------------------------------------------
-# Compute p50 and p80 OPL (empirical, from logistic fit)
-# ---------------------------------------------------------------------------
-# p50 OPL: optimization level at which P(achieving) = 50% → -alpha/beta
-# p80 OPL: optimization level at which P(achieving) = 80% → -(alpha - log(4))/beta
-#   since sigma(x)=0.8 → x=log(4)≈1.386
-
-import datetime
-
-for model in MODELS:
-    fr = fit_results[model]
-    alpha, beta = fr["alpha"], fr["beta"]
-    fr["level_80"] = -(alpha - np.log(4)) / beta if beta != 0 else float("inf")
-
-# Model release dates (from METR eval-analysis-public + web search)
-MODEL_RELEASE_DATES = {
-    "claude-opus-4.6": "2026-02-05",
-    "claude-opus-4.5": "2025-11-24",
-    "claude-opus-4": "2025-05-22",
-    "claude-sonnet-4.5": "2025-09-29",
-    "claude-sonnet-4": "2025-05-22",
-    "gpt-5.2": "2025-12-11",
-    "gpt-5.1": "2025-11-19",
-    "gpt-5": "2025-08-07",
-    "gemini-3-pro": "2025-11-18",
-    "gemini-3-flash": "2025-12-17",
-    "gemini-2.5-pro": "2025-06-17",
-    "o3": "2025-04-16",
-    "qwen3-coder": "2025-07-22",
-    "kimi-k2": "2025-07-11",
-    "glm-4.5": "2025-07-28",
-}
-
-# ---------------------------------------------------------------------------
-# Figures 4a & 4b: OPL horizon over time — separate p50 and p80 plots
-# ---------------------------------------------------------------------------
-import datetime
-import matplotlib.dates as mdates
-from matplotlib.lines import Line2D
-from adjustText import adjust_text
-
-MIN_N_FOR_PLOT = 20  # need enough data for a meaningful logistic fit
-
 plot_data = []
-for model in MODELS:
-    if model not in fit_results or model not in MODEL_RELEASE_DATES:
+for model in sorted_models:
+    if model not in MODEL_RELEASE_DATES:
         continue
     fr = fit_results[model]
-    if fr["n"] < MIN_N_FOR_PLOT:
-        print(f"  Skipping {MODEL_LABELS.get(model, model)} for temporal plot (n={fr['n']} < {MIN_N_FOR_PLOT})")
-        continue
     dt = datetime.datetime.strptime(MODEL_RELEASE_DATES[model], "%Y-%m-%d")
     plot_data.append({
         "model": model, "date": dt, "label": MODEL_LABELS.get(model, model),
         "p50": fr["level_50"], "p80": fr["level_80"],
-        "ci_lo": fr.get("ci_lo"), "ci_hi": fr.get("ci_hi"),
+        "p50_ci_lo": fr["p50_ci_lo"], "p50_ci_hi": fr["p50_ci_hi"],
+        "p80_ci_lo": fr["p80_ci_lo"], "p80_ci_hi": fr["p80_ci_hi"],
         "color": MODEL_COLORS.get(model, "#888888"),
     })
 
-# Convert dates to ordinal for trend fitting
 date_ordinals = np.array([d["date"].toordinal() for d in plot_data])
 
 for metric, metric_label, filename in [
@@ -499,15 +346,17 @@ for metric, metric_label, filename in [
 ]:
     fig, (ax_lin, ax_log) = plt.subplots(1, 2, figsize=(14, 6))
     vals = np.array([d[metric] for d in plot_data])
+    ci_lo_key = f"{metric}_ci_lo"
+    ci_hi_key = f"{metric}_ci_hi"
 
     for ax, title_suffix, is_log in [(ax_lin, "(linear scale)", False),
                                       (ax_log, "(log scale)", True)]:
         texts = []
         for d in plot_data:
             # CI error bars (light gray)
-            if metric == "p50" and d["ci_lo"] and d["ci_hi"]:
-                yerr_lo = d["p50"] - d["ci_lo"]
-                yerr_hi = d["ci_hi"] - d["p50"]
+            if d[ci_lo_key] is not None and d[ci_hi_key] is not None:
+                yerr_lo = d[metric] - d[ci_lo_key]
+                yerr_hi = d[ci_hi_key] - d[metric]
                 ax.errorbar(d["date"], d[metric], yerr=[[yerr_lo], [yerr_hi]],
                             fmt='none', ecolor='lightgray', capsize=3,
                             capthick=1, elinewidth=1.5, zorder=2)
@@ -520,14 +369,14 @@ for metric, metric_label, filename in [
             texts.append(ax.text(d["date"], d[metric], d["label"],
                                  fontsize=6.5, color=d["color"], fontweight='bold'))
 
-        # Trend line (linear fit on log values vs time)
-        valid = vals > 0
+        # Trend line (linear regression on values vs time)
+        valid = np.isfinite(vals) & (vals > 0)
         if valid.sum() >= 3:
-            log_vals = np.log(vals[valid])
             ords = date_ordinals[valid]
-            coeffs = np.polyfit(ords, log_vals, 1)
+            y_vals = vals[valid]
+            coeffs = np.polyfit(ords, y_vals, 1)
             trend_dates = np.linspace(ords.min() - 30, ords.max() + 30, 200)
-            trend_vals = np.exp(np.polyval(coeffs, trend_dates))
+            trend_vals = np.polyval(coeffs, trend_dates)
             trend_dt = [datetime.datetime.fromordinal(int(o)) for o in trend_dates]
             ax.plot(trend_dt, trend_vals, color='gray', linestyle='--',
                     linewidth=1.5, alpha=0.5, zorder=1)
@@ -541,14 +390,12 @@ for metric, metric_label, filename in [
             ax.set_yscale("log", base=2)
             if metric == "p50":
                 yticks = [0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-            else:
-                yticks = [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0]
-            ax.set_yticks(yticks)
-            ax.set_yticklabels([f"{v:.0%}" for v in yticks])
-            if metric == "p50":
                 ax.set_ylim(0.35, 1.15)
             else:
+                yticks = [0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 1.0]
                 ax.set_ylim(0.08, 1.15)
+            ax.set_yticks(yticks)
+            ax.set_yticklabels([f"{v:.0%}" for v in yticks])
         else:
             ax.yaxis.set_major_formatter(ticker.PercentFormatter(1.0))
             if metric == "p50":
@@ -569,7 +416,7 @@ for metric, metric_label, filename in [
         except Exception:
             pass
 
-    fig.suptitle(f"Optimization Proficiency Level — {metric_label}",
+    fig.suptitle(f"Optimization Proficiency Level \u2014 {metric_label}",
                  fontsize=13, fontweight="bold")
     plt.tight_layout()
     plt.savefig(os.path.join(OUT_DIR, filename), dpi=150, bbox_inches="tight")
@@ -593,11 +440,10 @@ summary = {
     "models": {},
 }
 
-for model in sorted_models:
-    if model not in fit_results:
-        continue
+all_sorted = sorted(MODELS, key=lambda m: -fit_results[m]["level_50"])
+for model in all_sorted:
     fr = fit_results[model]
-    summary["models"][model] = {
+    entry = {
         "label": MODEL_LABELS.get(model, model),
         "release_date": MODEL_RELEASE_DATES.get(model, "unknown"),
         "n_instances": fr["n"],
@@ -606,10 +452,11 @@ for model in sorted_models:
         "logistic_alpha": round(fr["alpha"], 4),
         "logistic_beta": round(fr["beta"], 4),
     }
-    if fr["ci_lo"]:
-        summary["models"][model]["p50_opl_95ci"] = [
-            round(fr["ci_lo"], 4), round(fr["ci_hi"], 4)
-        ]
+    if fr["p50_ci_lo"]:
+        entry["p50_opl_95ci"] = [round(fr["p50_ci_lo"], 4), round(fr["p50_ci_hi"], 4)]
+    if fr["p80_ci_lo"]:
+        entry["p80_opl_95ci"] = [round(fr["p80_ci_lo"], 4), round(fr["p80_ci_hi"], 4)]
+    summary["models"][model] = entry
 
 with open(os.path.join(OUT_DIR, "optimization_proficiency.json"), "w") as f:
     json.dump(summary, f, indent=2)
