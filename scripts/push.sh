@@ -22,8 +22,53 @@ TRAJS_SCAFFOLDS_OH="$HOME/scaffolds/openhands-runs"
 LOGS_BASE="$HOME/gso-internal/logs/run_evaluation/pass"
 REPORTS_DIR="$HOME/gso-internal/reports"
 
+# Secret patterns we never want to publish to public surfaces.
+SECRET_REGEX='hf_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|sk-ant-api[0-9A-Za-z_-]+|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[0-9A-Z]{16}|Bearer[[:space:]][A-Za-z0-9._-]{20,}'
+
 # Track Docent collection IDs for summary
 declare -A DOCENT_COLLECTIONS
+
+scan_file_for_secrets() {
+    local file_path=$1
+    local label=$2
+
+    if [ ! -f "$file_path" ]; then
+        return 0
+    fi
+
+    local hit
+    hit=$(rg -n -m 1 -S -e "$SECRET_REGEX" "$file_path" 2>/dev/null)
+    if [ -n "$hit" ]; then
+        echo "  -> BLOCKED $label (secret pattern detected)"
+        echo "     $hit"
+        return 1
+    fi
+    return 0
+}
+
+scan_dir_for_secrets() {
+    local dir_path=$1
+    local label=$2
+    local exclude_eval=${3:-false}
+
+    if [ ! -d "$dir_path" ]; then
+        return 0
+    fi
+
+    local hit
+    if [ "$exclude_eval" = "true" ]; then
+        hit=$(rg -n -m 1 -S -e "$SECRET_REGEX" --glob '!**/eval.sh' "$dir_path" 2>/dev/null)
+    else
+        hit=$(rg -n -m 1 -S -e "$SECRET_REGEX" "$dir_path" 2>/dev/null)
+    fi
+
+    if [ -n "$hit" ]; then
+        echo "  -> BLOCKED $label (secret pattern detected)"
+        echo "     $hit"
+        return 1
+    fi
+    return 0
+}
 
 find_trajs_path() {
     local trajs_dir=$1
@@ -54,9 +99,15 @@ push_gcs() {
     
     if [ -n "$trajs_path" ]; then
         echo "  -> Uploading trajs from: $trajs_path"
-        gsutil cp "$trajs_path/output.jsonl" "$gcs_dest/trajs/" 2>/dev/null || true
-        gsutil cp "$trajs_path/output.gso.jsonl" "$gcs_dest/trajs/" 2>/dev/null || true
-        gsutil cp "$trajs_path/metadata.json" "$gcs_dest/trajs/" 2>/dev/null || true
+        if scan_file_for_secrets "$trajs_path/output.jsonl" "trajs/output.jsonl"; then
+            gsutil cp "$trajs_path/output.jsonl" "$gcs_dest/trajs/" 2>/dev/null || true
+        fi
+        if scan_file_for_secrets "$trajs_path/output.gso.jsonl" "trajs/output.gso.jsonl"; then
+            gsutil cp "$trajs_path/output.gso.jsonl" "$gcs_dest/trajs/" 2>/dev/null || true
+        fi
+        if scan_file_for_secrets "$trajs_path/metadata.json" "trajs/metadata.json"; then
+            gsutil cp "$trajs_path/metadata.json" "$gcs_dest/trajs/" 2>/dev/null || true
+        fi
     else
         echo "  -> SKIP trajs (not found)"
     fi
@@ -64,8 +115,10 @@ push_gcs() {
     # Push logs
     local logs_path="$LOGS_BASE/$logs_dir"
     if [ -d "$logs_path" ]; then
-        echo "  -> Uploading logs..."
-        gsutil -m cp -r "$logs_path"/* "$gcs_dest/logs/" 2>&1 | grep -v "No such file or directory" || true
+        if scan_dir_for_secrets "$logs_path" "logs (excluding eval.sh)" true; then
+            echo "  -> Uploading logs (excluding eval.sh)..."
+            gsutil -m rsync -r -x '(^|/)eval\.sh$' "$logs_path" "$gcs_dest/logs/" 2>&1 | grep -v "No such file or directory" || true
+        fi
     else
         echo "  -> SKIP logs (not found)"
     fi
@@ -73,8 +126,10 @@ push_gcs() {
     # Push report
     local report_path="$REPORTS_DIR/$report_file"
     if [ -f "$report_path" ]; then
-        echo "  -> Uploading report..."
-        gsutil cp "$report_path" "$gcs_dest/report.json"
+        if scan_file_for_secrets "$report_path" "report.json"; then
+            echo "  -> Uploading report..."
+            gsutil cp "$report_path" "$gcs_dest/report.json"
+        fi
     else
         echo "  -> SKIP report (not found)"
     fi
