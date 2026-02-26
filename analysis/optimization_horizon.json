@@ -1,0 +1,414 @@
+{
+  "method": "1PL (Rasch) IRT",
+  "models": {
+    "claude-opus-4": {
+      "theta": -0.5446,
+      "theta_95ci": [
+        -1.4108,
+        0.2226
+      ],
+      "opt_commit_rate": 0.1094,
+      "release_date": "2025-05-14"
+    },
+    "claude-opus-4.5": {
+      "theta": 1.6867,
+      "theta_95ci": [
+        1.0307,
+        2.4836
+      ],
+      "opt_commit_rate": 0.4062,
+      "release_date": "2025-11-01"
+    },
+    "claude-opus-4.6": {
+      "theta": 2.2598,
+      "theta_95ci": [
+        1.7101,
+        3.1224
+      ],
+      "opt_commit_rate": 0.5156,
+      "release_date": "2026-02-04"
+    },
+    "claude-sonnet-4": {
+      "theta": -1.2707,
+      "theta_95ci": [
+        -2.8299,
+        -0.2682
+      ],
+      "opt_commit_rate": 0.0625,
+      "release_date": "2025-05-14"
+    },
+    "claude-sonnet-4.5": {
+      "theta": 0.5048,
+      "theta_95ci": [
+        -0.1763,
+        1.3249
+      ],
+      "opt_commit_rate": 0.2188,
+      "release_date": "2025-09-29"
+    },
+    "gemini-2.5-pro": {
+      "theta": -1.2707,
+      "theta_95ci": [
+        -2.7027,
+        -0.3673
+      ],
+      "opt_commit_rate": 0.0625,
+      "release_date": "2025-03-25"
+    },
+    "gemini-3-flash": {
+      "theta": -0.0306,
+      "theta_95ci": [
+        -0.7492,
+        0.6571
+      ],
+      "opt_commit_rate": 0.1562,
+      "release_date": "2025-12-10"
+    },
+    "gemini-3-pro": {
+      "theta": 0.8424,
+      "theta_95ci": [
+        0.1961,
+        1.6285
+      ],
+      "opt_commit_rate": 0.2656,
+      "release_date": "2025-12-10"
+    },
+    "glm-4.5": {
+      "theta": -1.616,
+      "theta_95ci": [
+        -6.4877,
+        -0.5606
+      ],
+      "opt_commit_rate": 0.0469,
+      "release_date": "2025-06-27"
+    },
+    "gpt-5": {
+      "theta": -0.5446,
+      "theta_95ci": [
+        -1.5499,
+        0.3147
+      ],
+      "opt_commit_rate": 0.1094,
+      "release_date": "2025-08-07"
+    },
+    "gpt-5.1": {
+      "theta": 0.3819,
+      "theta_95ci": [
+        -0.4371,
+        1.242
+      ],
+      "opt_commit_rate": 0.2031,
+      "release_date": "2025-11-13"
+    },
+    "gpt-5.2": {
+      "theta": 1.7712,
+      "theta_95ci": [
+        1.1494,
+        2.66
+      ],
+      "opt_commit_rate": 0.4219,
+      "release_date": "2025-12-11"
+    },
+    "kimi-k2": {
+      "theta": -0.991,
+      "theta_95ci": [
+        -2.483,
+        -0.0731
+      ],
+      "opt_commit_rate": 0.0781,
+      "release_date": "2025-07-10"
+    },
+    "o3": {
+      "theta": -0.1875,
+      "theta_95ci": [
+        -0.9847,
+        0.5548
+      ],
+      "opt_commit_rate": 0.1406,
+      "release_date": "2025-04-16"
+    },
+    "qwen3-coder": {
+      "theta": -0.991,
+      "theta_95ci": [
+        -2.7336,
+        0.0254
+      ],
+      "opt_commit_rate": 0.0781,
+      "release_date": "2025-07-22"
+    }
+  },
+  "tasks": {
+    "huggingface__datasets-c5464b3": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "huggingface__datasets-ef3b5dd": {
+      "alpha": 1.2833,
+      "solve_rate": 0.2667
+    },
+    "huggingface__tokenizers-076319d": {
+      "alpha": 1.7652,
+      "solve_rate": 0.2
+    },
+    "huggingface__tokenizers-c893204": {
+      "alpha": 0.4818,
+      "solve_rate": 0.4
+    },
+    "huggingface__transformers-63b90a5": {
+      "alpha": 1.2833,
+      "solve_rate": 0.2667
+    },
+    "numpy__numpy-09db9c7": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "numpy__numpy-11a7e2d": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "numpy__numpy-1b861a2": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "numpy__numpy-248c60e": {
+      "alpha": 0.8637,
+      "solve_rate": 0.3333
+    },
+    "numpy__numpy-2540554": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "numpy__numpy-28706af": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "numpy__numpy-330057f": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "numpy__numpy-68eead8": {
+      "alpha": 0.4818,
+      "solve_rate": 0.4
+    },
+    "numpy__numpy-780799b": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "numpy__numpy-7853cbc": {
+      "alpha": 0.4818,
+      "solve_rate": 0.4
+    },
+    "numpy__numpy-7ff7ec7": {
+      "alpha": 0.8637,
+      "solve_rate": 0.3333
+    },
+    "numpy__numpy-905d37e": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "numpy__numpy-b862e4f": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "numpy__numpy-be52f19": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "numpy__numpy-cb461ba": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "numpy__numpy-cedba62": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "numpy__numpy-e801e7a": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "numpy__numpy-eb21b25": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "numpy__numpy-ec52363": {
+      "alpha": 1.7652,
+      "solve_rate": 0.2
+    },
+    "numpy__numpy-ee75c87": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "numpy__numpy-ef5e545": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "pandas-dev__pandas-191557d": {
+      "alpha": 1.7652,
+      "solve_rate": 0.2
+    },
+    "pandas-dev__pandas-1c2ad16": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "pandas-dev__pandas-2278923": {
+      "alpha": 0.8637,
+      "solve_rate": 0.3333
+    },
+    "pandas-dev__pandas-235113e": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "pandas-dev__pandas-2a08b05": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "pandas-dev__pandas-2f4c93e": {
+      "alpha": 1.2833,
+      "solve_rate": 0.2667
+    },
+    "pandas-dev__pandas-37e9e06": {
+      "alpha": -0.9302,
+      "solve_rate": 0.6667
+    },
+    "pandas-dev__pandas-438b957": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "pandas-dev__pandas-45f0705": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "pandas-dev__pandas-5d82d8b": {
+      "alpha": 1.2833,
+      "solve_rate": 0.2667
+    },
+    "pandas-dev__pandas-609c3b7": {
+      "alpha": 1.7652,
+      "solve_rate": 0.2
+    },
+    "pandas-dev__pandas-65bca65": {
+      "alpha": 1.7652,
+      "solve_rate": 0.2
+    },
+    "pandas-dev__pandas-71c94af": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "pandas-dev__pandas-9097263": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "pandas-dev__pandas-9a6c8f0": {
+      "alpha": 1.7652,
+      "solve_rate": 0.2
+    },
+    "pandas-dev__pandas-9d6d587": {
+      "alpha": 1.2833,
+      "solve_rate": 0.2667
+    },
+    "pandas-dev__pandas-c34da50": {
+      "alpha": 0.8637,
+      "solve_rate": 0.3333
+    },
+    "pandas-dev__pandas-c51c2a7": {
+      "alpha": 1.7652,
+      "solve_rate": 0.2
+    },
+    "pandas-dev__pandas-c6cf37a": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "pandas-dev__pandas-ccca5df": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "pandas-dev__pandas-d377cc9": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "pandas-dev__pandas-e7e3676": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "pandas-dev__pandas-e8961f1": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "pandas-dev__pandas-f1211e7": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    },
+    "pandas-dev__pandas-f298507": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "pydantic__pydantic-4a09447": {
+      "alpha": 0.1224,
+      "solve_rate": 0.4667
+    },
+    "pydantic__pydantic-c2647ab": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "python-pillow__Pillow-63f398b": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "python-pillow__Pillow-d8af3fc": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "python-pillow__Pillow-f854676": {
+      "alpha": -0.2257,
+      "solve_rate": 0.5333
+    },
+    "python-pillow__Pillow-fd8ee84": {
+      "alpha": -0.2257,
+      "solve_rate": 0.5333
+    },
+    "tornadoweb__tornado-1b464c4": {
+      "alpha": -0.2257,
+      "solve_rate": 0.5333
+    },
+    "tornadoweb__tornado-9a18f6c": {
+      "alpha": -0.9302,
+      "solve_rate": 0.6667
+    },
+    "uploadcare__pillow-simd-0514e20": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "uploadcare__pillow-simd-2818b90": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "uploadcare__pillow-simd-7511039": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "uploadcare__pillow-simd-b4045cf": {
+      "alpha": 3.2408,
+      "solve_rate": 0.0667
+    },
+    "uploadcare__pillow-simd-d970a39": {
+      "alpha": 2.3621,
+      "solve_rate": 0.1333
+    }
+  },
+  "summary": {
+    "n_models": 15,
+    "n_tasks_used": 64,
+    "n_tasks_removed_degenerate": 34,
+    "overall_solve_rate": 0.1917,
+    "theta_range": [
+      -1.616,
+      2.2598
+    ],
+    "alpha_range": [
+      -0.9302,
+      3.2408
+    ],
+    "trend_theta_per_day": 0.009843,
+    "trend_theta_per_month": 0.2953
+  }
+}
