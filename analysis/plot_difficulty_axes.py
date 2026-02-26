@@ -165,7 +165,7 @@ def main():
     plt.suptitle('GSO: Searching for a METR-style Difficulty Axis\n(METR achieves R²=0.83 with human time-to-complete)',
                  fontsize=14, fontweight='bold', y=1.02)
     plt.tight_layout()
-    outpath = ROOT / "results" / "difficulty_axis_search.png"
+    outpath = ROOT / "analysis" / "difficulty_axis_search.png"
     plt.savefig(outpath, dpi=150, bbox_inches='tight')
     print(f"\nSaved to {outpath}")
 
@@ -223,7 +223,7 @@ def main():
             style='italic', alpha=0.5)
 
     plt.tight_layout()
-    outpath2 = ROOT / "results" / "metr_style_optimization_scope.png"
+    outpath2 = ROOT / "analysis" / "metr_style_optimization_scope.png"
     plt.savefig(outpath2, dpi=150, bbox_inches='tight')
     print(f"Saved METR-style plot to {outpath2}")
 
