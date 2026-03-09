@@ -96,6 +96,18 @@
         "score": 18.63
       }
     },
+    "gemini-3.1-pro": {
+      "docent_url": null,
+      "gcs_path": "gs://gso-experiments/gemini-3.1-pro",
+      "report": "reports/gemini-3.1-pro.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 23,
+        "opt_base": 63,
+        "passed": 83,
+        "score": 22.55
+      }
+    },
     "glm-4.5": {
       "docent_url": "https://docent.transluce.org/dashboard/d67a76ab-1ad2-4b88-9f31-500626ebc5e0",
       "gcs_path": "gs://gso-experiments/glm-4.5",

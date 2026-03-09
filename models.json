@@ -47,6 +47,12 @@
     "report_file": "gemini-3-pro.opt@1.pass.report.json",
     "docent_id": "2100bee5-e038-4947-bf23-94a02d3e68bc"
   },
+  "gemini-3.1-pro": {
+    "trajs_dir": "gemini-3-1-pro",
+    "logs_dir": "vertex_ai__gemini-3.1-pro-preview",
+    "report_file": "gemini-3.1-pro.opt@1.pass.report.json",
+    "docent_id": ""
+  },
   "glm-4.5": {
     "trajs_dir": "GLM-4.5-Air-FP8_maxiter_100_N_v0.51.1-no-hint-run_1",
     "logs_dir": "GLM-4.5-Air-FP8_maxiter_100_N_v0.51.1-no-hint-run_1",
