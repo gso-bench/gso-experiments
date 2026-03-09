@@ -97,7 +97,7 @@
       }
     },
     "gemini-3.1-pro": {
-      "docent_url": null,
+      "docent_url": "https://docent.transluce.org/dashboard/6c3a5b65-6194-4c84-91a1-8eeb2198fd89",
       "gcs_path": "gs://gso-experiments/gemini-3.1-pro",
       "report": "reports/gemini-3.1-pro.json",
       "summary": {

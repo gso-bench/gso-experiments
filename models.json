@@ -51,7 +51,7 @@
     "trajs_dir": "gemini-3-1-pro",
     "logs_dir": "vertex_ai__gemini-3.1-pro-preview",
     "report_file": "gemini-3.1-pro.opt@1.pass.report.json",
-    "docent_id": ""
+    "docent_id": "6c3a5b65-6194-4c84-91a1-8eeb2198fd89"
   },
   "glm-4.5": {
     "trajs_dir": "GLM-4.5-Air-FP8_maxiter_100_N_v0.51.1-no-hint-run_1",

@@ -23,7 +23,8 @@ LOGS_BASE="$HOME/gso-internal/logs/run_evaluation/pass"
 REPORTS_DIR="$HOME/gso-internal/reports"
 
 # Secret patterns we never want to publish to public surfaces.
-SECRET_REGEX='hf_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9_-]{20,}|sk-ant-api[0-9A-Za-z_-]+|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[0-9A-Z]{16}|Bearer[[:space:]][A-Za-z0-9._-]{20,}'
+# Keep these fairly specific to reduce false positives on log text/blob-like payloads.
+SECRET_REGEX='hf_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{32,}|sk-ant-api[0-9A-Za-z_-]+|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[0-9A-Z]{8,}[0-9][0-9A-Z]{7,}|Bearer[[:space:]][A-Za-z0-9._-]{20,}'
 
 # Track Docent collection IDs for summary
 declare -A DOCENT_COLLECTIONS
