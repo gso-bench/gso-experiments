@@ -156,6 +156,30 @@
         "score": 27.45
       }
     },
+    "gpt-5.4-high": {
+      "docent_url": "https://docent.transluce.org/dashboard/54f25a70-3a4b-4a7f-af0e-9d58d7d0da2a",
+      "gcs_path": "gs://gso-experiments/gpt-5.4-high",
+      "report": "reports/gpt-5.4-high.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 26,
+        "opt_base": 83,
+        "passed": 94,
+        "score": 25.49
+      }
+    },
+    "gpt-5.4-xhigh": {
+      "docent_url": "https://docent.transluce.org/dashboard/113af3a7-7851-4ab2-ae4c-be8f93c7c694",
+      "gcs_path": "gs://gso-experiments/gpt-5.4-xhigh",
+      "report": "reports/gpt-5.4-xhigh.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 32,
+        "opt_base": 71,
+        "passed": 87,
+        "score": 31.37
+      }
+    },
     "kimi-k2": {
       "docent_url": "https://docent.transluce.org/dashboard/91e60d04-1bdb-4db1-a404-0e15b1bfe474",
       "gcs_path": "gs://gso-experiments/kimi-k2",

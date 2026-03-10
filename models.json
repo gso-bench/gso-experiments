@@ -77,6 +77,18 @@
     "report_file": "gpt-5.2.opt@1.pass.report.json",
     "docent_id": "992bdf7f-4906-4dd5-98dd-328d6a663624"
   },
+  "gpt-5.4-high": {
+    "trajs_dir": "gpt-5-4-high",
+    "logs_dir": "openai__responses__gpt-5.4-high",
+    "report_file": "gpt-5.4-high.opt@1.pass.report.json",
+    "docent_id": "54f25a70-3a4b-4a7f-af0e-9d58d7d0da2a"
+  },
+  "gpt-5.4-xhigh": {
+    "trajs_dir": "gpt-5-4-xhigh",
+    "logs_dir": "openai__responses__gpt-5.4-xhigh",
+    "report_file": "gpt-5.4-xhigh.opt@1.pass.report.json",
+    "docent_id": "113af3a7-7851-4ab2-ae4c-be8f93c7c694"
+  },
   "kimi-k2": {
     "trajs_dir": "Kimi-K2-Instruct_maxiter_100_N_v0.51.1-no-hint-run_1",
     "logs_dir": "Kimi-K2-Instruct_maxiter_100_N_v0.51.1-no-hint-run_1",
