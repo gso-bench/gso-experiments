@@ -1,5 +1,29 @@
 {
   "models": {
+    "claude-opus-4.7": {
+      "docent_url": "https://docent.transluce.org/dashboard/8e50fbac-49ce-4da1-af68-be336e8bd251",
+      "gcs_path": "gs://gso-experiments/claude-opus-4.7",
+      "report": "reports/claude-opus-4.7.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 45,
+        "opt_base": 90,
+        "passed": 97,
+        "score": 44.12
+      }
+    },
+    "gpt-5.5-xhigh": {
+      "docent_url": "https://docent.transluce.org/dashboard/63cfc963-28f1-4e0a-9933-0becdf129f88",
+      "gcs_path": "gs://gso-experiments/gpt-5.5-xhigh",
+      "report": "reports/gpt-5.5-xhigh.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 41,
+        "opt_base": 89,
+        "passed": 97,
+        "score": 40.2
+      }
+    },
     "claude-opus-4.6": {
       "docent_url": "https://docent.transluce.org/dashboard/c129c34b-3b40-4db1-b963-68d5e9372969",
       "gcs_path": "gs://gso-experiments/claude-opus-4.6",

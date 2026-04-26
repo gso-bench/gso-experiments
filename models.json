@@ -1,4 +1,16 @@
 {
+  "claude-opus-4.7": {
+    "trajs_dir": "claude-opus-4-7",
+    "logs_dir": "vertex_ai__claude-opus-4-7",
+    "report_file": "claude-opus-4.7.opt@1.pass.report.json",
+    "docent_id": "8e50fbac-49ce-4da1-af68-be336e8bd251"
+  },
+  "gpt-5.5-xhigh": {
+    "trajs_dir": "gpt-5-5-xhigh",
+    "logs_dir": "openai__responses__gpt-5.5",
+    "report_file": "gpt-5.5-xhigh.opt@1.pass.report.json",
+    "docent_id": "63cfc963-28f1-4e0a-9933-0becdf129f88"
+  },
   "claude-opus-4.6": {
     "trajs_dir": "claude-opus-4-6",
     "logs_dir": "vertex_ai__claude-opus-4-6",
