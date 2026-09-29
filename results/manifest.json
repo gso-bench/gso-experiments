@@ -275,6 +275,54 @@
         "passed": 63,
         "score": 4.9
       }
+    },
+    "claude-fable-5.1-xhigh": {
+      "docent_url": "https://docent.transluce.org/dashboard/55bfcf0b-fb7b-417a-ac26-f695ebadd55f",
+      "gcs_path": "gs://gso-experiments/claude-fable-5.1-xhigh",
+      "report": "reports/claude-fable-5.1-xhigh.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 90,
+        "opt_base": 99,
+        "passed": 99,
+        "score": 88.24
+      }
+    },
+    "gpt-6-astra-xhigh": {
+      "docent_url": "https://docent.transluce.org/dashboard/ce7561dc-f2ce-418b-8751-923f56e6606f",
+      "gcs_path": "gs://gso-experiments/gpt-6-astra-xhigh",
+      "report": "reports/gpt-6-astra-xhigh.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 81,
+        "opt_base": 97,
+        "passed": 101,
+        "score": 79.41
+      }
+    },
+    "claude-fable-5-xhigh": {
+      "docent_url": "https://docent.transluce.org/dashboard/c1b0b821-d966-423b-b8cc-93aa9d98cfa8",
+      "gcs_path": "gs://gso-experiments/claude-fable-5-xhigh",
+      "report": "reports/claude-fable-5-xhigh.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 80,
+        "opt_base": 98,
+        "passed": 99,
+        "score": 78.43
+      }
+    },
+    "gpt-5.6-sol-xhigh": {
+      "docent_url": "https://docent.transluce.org/dashboard/1e46e177-e54d-4197-943f-1bedd2f41cb6",
+      "gcs_path": "gs://gso-experiments/gpt-5.6-sol-xhigh",
+      "report": "reports/gpt-5.6-sol-xhigh.json",
+      "summary": {
+        "total_instances": 102,
+        "opt_commit": 78,
+        "opt_base": 100,
+        "passed": 101,
+        "score": 76.47
+      }
     }
   }
 }

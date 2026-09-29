@@ -136,5 +136,29 @@
     "logs_dir": "qwen3-coder-plus_maxiter_100_N_v0.51.1-no-hint-run_2",
     "report_file": "qwen3-coder.opt@1.pass.report.json",
     "docent_id": "5643520b-8b4a-4b13-91b4-8a47ab462b73"
+  },
+  "claude-fable-5.1-xhigh": {
+    "trajs_dir": "publication-20260927-claude-fable-5.1-xhigh",
+    "logs_dir": "publication-20260927-claude-fable-5.1-xhigh",
+    "report_file": "publication-20260927-claude-fable-5.1-xhigh.report.json",
+    "docent_id": "55bfcf0b-fb7b-417a-ac26-f695ebadd55f"
+  },
+  "gpt-6-astra-xhigh": {
+    "trajs_dir": "publication-20260927-gpt-6-astra-xhigh",
+    "logs_dir": "publication-20260927-gpt-6-astra-xhigh",
+    "report_file": "publication-20260927-gpt-6-astra-xhigh.report.json",
+    "docent_id": "ce7561dc-f2ce-418b-8751-923f56e6606f"
+  },
+  "claude-fable-5-xhigh": {
+    "trajs_dir": "publication-20260927-claude-fable-5-xhigh",
+    "logs_dir": "publication-20260927-claude-fable-5-xhigh",
+    "report_file": "publication-20260927-claude-fable-5-xhigh.report.json",
+    "docent_id": "c1b0b821-d966-423b-b8cc-93aa9d98cfa8"
+  },
+  "gpt-5.6-sol-xhigh": {
+    "trajs_dir": "publication-20260927-gpt-5.6-sol-xhigh",
+    "logs_dir": "publication-20260927-gpt-5.6-sol-xhigh",
+    "report_file": "publication-20260927-gpt-5.6-sol-xhigh.report.json",
+    "docent_id": "1e46e177-e54d-4197-943f-1bedd2f41cb6"
   }
 }
